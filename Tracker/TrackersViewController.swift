@@ -7,7 +7,7 @@ final class TrackersViewController: UIViewController {
     private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ru_RU")
-        formatter.dateFormat = "dd.MM.yy" // Наш кастомный формат даты
+        formatter.dateFormat = "dd.MM.yy"
         return formatter
     }()
     
@@ -89,13 +89,15 @@ final class TrackersViewController: UIViewController {
         return label
     }()
     
+    private var categories: [TrackerCategory] = []
+    private var completedTrackers: [TrackerRecord] = []
+    
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
         setupLayout()
-        
         updateDateLabel(with: datePicker.date)
     }
 
@@ -171,5 +173,22 @@ final class TrackersViewController: UIViewController {
     
     private func updateDateLabel(with date: Date) {
         dateLabel.text = Self.dateFormatter.string(from: date)
+    }
+    
+    private func addTracker(_ tracker: Tracker, toCategory title: String) {
+        
+        var currentCategories = self.categories
+        if let categoryIndex = currentCategories.firstIndex(where: { $0.title == title }) {
+            let oldCategory = currentCategories[categoryIndex]
+            let updatedTrackers = oldCategory.trackers + [tracker] // Простое сложение для создания нового массива
+            let updatedCategory = TrackerCategory(title: oldCategory.title, trackers: updatedTrackers)
+            
+            currentCategories[categoryIndex] = updatedCategory
+        } else {
+            let newCategory = TrackerCategory(title: title, trackers: [tracker])
+            currentCategories.append(newCategory)
+        }
+        self.categories = currentCategories
+        
     }
 }
