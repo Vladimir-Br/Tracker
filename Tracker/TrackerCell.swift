@@ -100,7 +100,7 @@ final class TrackerCell: UICollectionViewCell {
             completeButton.heightAnchor.constraint(equalToConstant: 34),
             
             daysCounterLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 12),
-            daysCounterLabel.centerYAnchor.constraint(equalTo: completeButton.centerYAnchor)  кнопки
+            daysCounterLabel.centerYAnchor.constraint(equalTo: completeButton.centerYAnchor) 
         ])
     }
     
