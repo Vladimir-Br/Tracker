@@ -9,15 +9,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         window = UIWindow(windowScene: windowScene)
-        window?.rootViewController = LaunchScreenViewController()
+        window?.rootViewController = TabBarController()
         window?.makeKeyAndVisible()
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                let tabBarController = TabBarController()
-                UIView.transition(with: self.window!, duration: 0.3, options: .transitionCrossDissolve, animations: {
-                    self.window?.rootViewController = tabBarController
-                }, completion: nil)
-            }
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {

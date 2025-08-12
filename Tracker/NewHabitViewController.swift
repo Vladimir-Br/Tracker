@@ -124,6 +124,7 @@ final class NewHabitViewController: UIViewController {
     
     private func setupTapGesture() {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+        tapGesture.cancelsTouchesInView = false // Не отменяем нажатия на другие view
         view.addGestureRecognizer(tapGesture)
     }
     
@@ -177,7 +178,7 @@ extension NewHabitViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = UITableViewCell()
+        let cell = UITableViewCell(style: .value1, reuseIdentifier: nil)
         cell.accessoryType = .disclosureIndicator
         cell.backgroundColor = UIColor.lightGray.withAlphaComponent(0.12)
         cell.textLabel?.font = .systemFont(ofSize: 17)
@@ -186,9 +187,15 @@ extension NewHabitViewController: UITableViewDataSource {
         switch indexPath.row {
         case 0:
             cell.textLabel?.text = "Категория"
+            cell.detailTextLabel?.text = "Важное"
+            cell.detailTextLabel?.textColor = .systemGray
         case 1:
             cell.textLabel?.text = "Расписание"
-            
+            if !schedule.isEmpty {
+                let scheduleText = schedule.count == 7 ? "Каждый день" : schedule.map { $0.title }.joined(separator: ", ")
+                cell.detailTextLabel?.text = scheduleText
+                cell.detailTextLabel?.textColor = .systemGray
+            }
         default:
             break
         }
@@ -211,11 +218,17 @@ extension NewHabitViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         
-        if indexPath.row == 1 {
+        switch indexPath.row {
+        case 0:
+            // Категория - хардкод "Важное" в 14-м спринте
+            break
+        case 1:
             let scheduleVC = ScheduleViewController()
             scheduleVC.delegate = self
             scheduleVC.currentlySelectedDays = Set(self.schedule)
             navigationController?.pushViewController(scheduleVC, animated: true)
+        default:
+            break
         }
     }
 }
@@ -237,10 +250,8 @@ extension NewHabitViewController: UITextFieldDelegate {
 
 extension NewHabitViewController: ScheduleViewControllerDelegate {
     func didConfirmSchedule(selectedDays: Set<Tracker.Weekday>) {
-        
         self.schedule = Array(selectedDays).sorted(by: { $0.rawValue < $1.rawValue })
         checkCreateButtonState()
-        
         menuTableView.reloadData()
     }
 }
