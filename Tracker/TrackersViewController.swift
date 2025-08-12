@@ -1,3 +1,4 @@
+
 import UIKit
 
 final class TrackersViewController: UIViewController {
@@ -20,7 +21,7 @@ final class TrackersViewController: UIViewController {
         let calendar = Calendar.current
         let weekday = calendar.component(.weekday, from: currentDate)
         
-        return categories.map { category in
+        return categories.compactMap { category -> TrackerCategory? in
             let trackers = category.trackers.filter { tracker in
                 
                 if tracker.schedule.isEmpty {
@@ -35,7 +36,7 @@ final class TrackersViewController: UIViewController {
             }
             
             return TrackerCategory(title: category.title, trackers: trackers)
-        }.compactMap { $0 }
+        }
     }
     // MARK: - UI Elements
     

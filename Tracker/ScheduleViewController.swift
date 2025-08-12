@@ -23,6 +23,8 @@ final class ScheduleViewController: UIViewController {
         let tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.layer.cornerRadius = 16
+        tableView.layer.masksToBounds = true
+        tableView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         tableView.separatorStyle = .singleLine
         return tableView
     }()

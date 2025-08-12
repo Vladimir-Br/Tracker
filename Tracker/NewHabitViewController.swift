@@ -34,6 +34,8 @@ final class NewHabitViewController: UIViewController {
         let tableView = UITableView(frame: .zero, style: .insetGrouped)
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.layer.cornerRadius = 16
+        tableView.layer.masksToBounds = true
+        tableView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         tableView.separatorStyle = .singleLine
         return tableView
     }()
@@ -79,6 +81,7 @@ final class NewHabitViewController: UIViewController {
         
         setupUI()
         setupLayout()
+        setupTapGesture()
         
         cancelButton.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
         createButton.addTarget(self, action: #selector(createButtonTapped), for: .touchUpInside)
@@ -119,6 +122,15 @@ final class NewHabitViewController: UIViewController {
         ])
     }
     
+    private func setupTapGesture() {
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+        view.addGestureRecognizer(tapGesture)
+    }
+    
+    @objc private func handleTap() {
+        view.endEditing(true)
+    }
+    
     // MARK: - Actions
     
     @objc private func cancelButtonTapped() {
@@ -138,6 +150,8 @@ final class NewHabitViewController: UIViewController {
             emoji: emoji,
             schedule: self.schedule
         )
+        
+
         
         delegate?.didCreateTracker(newTracker, categoryTitle: "Важное")
         self.view.window?.rootViewController?.dismiss(animated: true, completion: nil)
