@@ -6,29 +6,39 @@ protocol ScheduleViewControllerDelegate: AnyObject {
 }
 
 final class ScheduleViewController: UIViewController {
-    
+
     // MARK: - Delegate
-    
     weak var delegate: ScheduleViewControllerDelegate?
     
     // MARK: - Properties
-    
-    
     var currentlySelectedDays: Set<Tracker.Weekday> = []
-    private let weekDays = Tracker.Weekday.allCases
+    
+    private let weekDays: [Tracker.Weekday] = [
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday
+    ]
     
     // MARK: - UI Elements
     
-    private let scheduleTableView: UITableView = {
-        let tableView = UITableView()
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.layer.cornerRadius = 16
-        tableView.layer.masksToBounds = true
-        tableView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-        tableView.separatorStyle = .singleLine
-        return tableView
+    private let titleLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Расписание"
+        label.font = .systemFont(ofSize: 16, weight: .medium)
+        label.textColor = .black // #1A1B22 практически черный
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
     }()
     
+    private let scheduleTableView: UITableView = {
+        let tableView = UITableView(frame: .zero, style: .plain)
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.backgroundColor = UIColor(named: "Light Gray Background") ?? .lightGray.withAlphaComponent(0.3)
+        tableView.layer.cornerRadius = 16
+        tableView.isScrollEnabled = false
+        tableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        return tableView
+    }()
+
     private let doneButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Готово", for: .normal)
@@ -44,7 +54,7 @@ final class ScheduleViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.title = "Расписание"
+        navigationController?.navigationBar.isHidden = true
         view.backgroundColor = .white
         
         setupUI()
@@ -59,6 +69,7 @@ final class ScheduleViewController: UIViewController {
     // MARK: - Setup
     
     private func setupUI() {
+        view.addSubview(titleLabel)
         view.addSubview(scheduleTableView)
         view.addSubview(doneButton)
     }
@@ -66,10 +77,13 @@ final class ScheduleViewController: UIViewController {
     private func setupLayout() {
         NSLayoutConstraint.activate([
             
-            scheduleTableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 27),
+            titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            scheduleTableView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 38),
             scheduleTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             scheduleTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            scheduleTableView.heightAnchor.constraint(equalToConstant: 525), // 7 ячеек по 75
+            scheduleTableView.heightAnchor.constraint(equalToConstant: 525),
             
             doneButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
             doneButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
@@ -81,7 +95,6 @@ final class ScheduleViewController: UIViewController {
     // MARK: - Actions
     
     @objc private func switchToggled(_ sender: UISwitch) {
-        
         let day = weekDays[sender.tag]
         
         if sender.isOn {
@@ -108,7 +121,6 @@ final class ScheduleViewController: UIViewController {
 }
 
 // MARK: - UITableViewDataSource
-
 extension ScheduleViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return weekDays.count
@@ -117,16 +129,21 @@ extension ScheduleViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell()
         let day = weekDays[indexPath.row]
+        
         cell.textLabel?.text = day.title
-        cell.backgroundColor = UIColor.lightGray.withAlphaComponent(0.12)
+        cell.backgroundColor = .clear
+        cell.selectionStyle = .none
+        
         let switchView = UISwitch(frame: .zero)
         switchView.setOn(currentlySelectedDays.contains(day), animated: false)
         switchView.onTintColor = .systemBlue
         switchView.tag = indexPath.row
         switchView.addTarget(self, action: #selector(switchToggled(_:)), for: .valueChanged)
+        
         cell.accessoryView = switchView
+        
         if indexPath.row == weekDays.count - 1 {
-            cell.separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: .greatestFiniteMagnitude)
+            cell.separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: tableView.bounds.width)
         }
         
         return cell

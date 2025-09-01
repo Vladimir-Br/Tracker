@@ -11,16 +11,41 @@ final class NewHabitViewController: UIViewController {
     
     weak var delegate: NewHabitViewControllerDelegate?
     
+    // MARK: - Colors
+    
+    private let lightGrayColor = UIColor(red: 230/255.0, green: 232/255.0, blue: 235/255.0, alpha: 0.3) // #E6E8EB с 30% прозрачности
+    
     // MARK: - Private Properties
     
     private var schedule: [Tracker.Weekday] = []
     
     // MARK: - UI Elements
     
+    private let titleLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Новая привычка"
+        
+        let font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineHeightMultiple = 22.0 / 16.0
+        paragraphStyle.alignment = .center
+        
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: font,
+            .paragraphStyle: paragraphStyle,
+            .kern: 0 // letter-spacing: 0px
+        ]
+        
+        label.attributedText = NSAttributedString(string: "Новая привычка", attributes: attributes)
+        label.textColor = UIColor(red: 0.1, green: 0.105, blue: 0.133, alpha: 1) // #1A1B22
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
     private let nameTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Введите название трекера"
-        textField.backgroundColor = UIColor.lightGray.withAlphaComponent(0.12)
+        textField.backgroundColor = UIColor(red: 230/255.0, green: 232/255.0, blue: 235/255.0, alpha: 0.3) // #E6E8EB с 30% прозрачности
         textField.layer.cornerRadius = 16
         textField.font = .systemFont(ofSize: 17)
         textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
@@ -31,12 +56,15 @@ final class NewHabitViewController: UIViewController {
     }()
     
     private let menuTableView: UITableView = {
-        let tableView = UITableView(frame: .zero, style: .insetGrouped)
+        
+        let tableView = UITableView(frame: .zero, style: .plain)
         tableView.translatesAutoresizingMaskIntoConstraints = false
+        
+        tableView.backgroundColor = UIColor(red: 230/255.0, green: 232/255.0, blue: 235/255.0, alpha: 0.3) // #E6E8EB с
         tableView.layer.cornerRadius = 16
-        tableView.layer.masksToBounds = true
-        tableView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-        tableView.separatorStyle = .singleLine
+        
+        tableView.isScrollEnabled = false
+        tableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
         return tableView
     }()
     
@@ -76,7 +104,7 @@ final class NewHabitViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.title = "Новая привычка"
+        navigationController?.navigationBar.isHidden = true
         view.backgroundColor = .white
         
         setupUI()
@@ -94,6 +122,7 @@ final class NewHabitViewController: UIViewController {
     // MARK: - Setup
     
     private func setupUI() {
+        view.addSubview(titleLabel)
         view.addSubview(nameTextField)
         view.addSubview(menuTableView)
         
@@ -105,17 +134,20 @@ final class NewHabitViewController: UIViewController {
     private func setupLayout() {
         NSLayoutConstraint.activate([
             
-            nameTextField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 24),
+            titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 27),
+            titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            nameTextField.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 38),
             nameTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             nameTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             nameTextField.heightAnchor.constraint(equalToConstant: 75),
             
             menuTableView.topAnchor.constraint(equalTo: nameTextField.bottomAnchor, constant: 24),
-            menuTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            menuTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            menuTableView.heightAnchor.constraint(equalToConstant: 150), // 2 ячейки по 75
+            menuTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            menuTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            menuTableView.heightAnchor.constraint(equalToConstant: 150),
             
-            buttonsStackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
+            buttonsStackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: 0),
             buttonsStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             buttonsStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             buttonsStackView.heightAnchor.constraint(equalToConstant: 60)
@@ -124,7 +156,7 @@ final class NewHabitViewController: UIViewController {
     
     private func setupTapGesture() {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
-        tapGesture.cancelsTouchesInView = false // Не отменяем нажатия на другие view
+        tapGesture.cancelsTouchesInView = false
         view.addGestureRecognizer(tapGesture)
     }
     
@@ -152,10 +184,8 @@ final class NewHabitViewController: UIViewController {
             schedule: self.schedule
         )
         
-
-        
         delegate?.didCreateTracker(newTracker, categoryTitle: "Важное")
-        self.view.window?.rootViewController?.dismiss(animated: true, completion: nil)
+        dismiss(animated: true)
     }
     
     // MARK: - Private Methods
@@ -178,30 +208,30 @@ extension NewHabitViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = UITableViewCell(style: .value1, reuseIdentifier: nil)
+        let cell = UITableViewCell(style: .subtitle, reuseIdentifier: nil)
         cell.accessoryType = .disclosureIndicator
-        cell.backgroundColor = UIColor.lightGray.withAlphaComponent(0.12)
-        cell.textLabel?.font = .systemFont(ofSize: 17)
         
-        // Настройка ячеек
+        cell.backgroundColor = .clear
+        cell.selectionStyle = .none
+        
+        cell.textLabel?.font = .systemFont(ofSize: 17)
+        cell.detailTextLabel?.font = .systemFont(ofSize: 17)
+        cell.detailTextLabel?.textColor = .gray
+
         switch indexPath.row {
         case 0:
             cell.textLabel?.text = "Категория"
-            cell.detailTextLabel?.text = "Важное"
-            cell.detailTextLabel?.textColor = .systemGray
+            cell.detailTextLabel?.text = "Важное" //  хардкод до 17 спринта
         case 1:
             cell.textLabel?.text = "Расписание"
             if !schedule.isEmpty {
-                let scheduleText = schedule.count == 7 ? "Каждый день" : schedule.map { $0.title }.joined(separator: ", ")
+                let scheduleText = schedule.count == 7 ? "Каждый день" : schedule.map { $0.shortTitle }.joined(separator: ", ")
                 cell.detailTextLabel?.text = scheduleText
-                cell.detailTextLabel?.textColor = .systemGray
             }
+            
+            cell.separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: .greatestFiniteMagnitude)
         default:
             break
-        }
-        
-        if indexPath.row == 1 {
-            cell.separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: .greatestFiniteMagnitude)
         }
         
         return cell

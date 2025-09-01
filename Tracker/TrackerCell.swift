@@ -117,7 +117,10 @@ final class TrackerCell: UICollectionViewCell {
         completeButton.tintColor = .white
         completeButton.backgroundColor = tracker.color
         completeButton.alpha = isCompleted ? 0.3 : 1.0
-        completeButton.isEnabled = date <= Date()
+        
+        let calendar = Calendar.current
+        let isFutureDay = calendar.startOfDay(for: date) > calendar.startOfDay(for: Date())
+        completeButton.isEnabled = !isFutureDay
     }
     
     // MARK: - Actions

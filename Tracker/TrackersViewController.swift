@@ -15,7 +15,7 @@ final class TrackersViewController: UIViewController {
     
     // MARK: - Properties
     private var categories: [TrackerCategory] = []
-    private var completedTrackers: [TrackerRecord] = []
+    private var completedTrackers: Set<TrackerRecord> = []
     private var currentDate: Date = Date()
     private var visibleCategories: [TrackerCategory] {
         let calendar = Calendar.current
@@ -73,7 +73,7 @@ final class TrackersViewController: UIViewController {
     
     private lazy var addButton: UIBarButtonItem = {
         let button = UIBarButtonItem(
-            image: UIImage(systemName: "plus"),
+            image: UIImage(named: "Plus"),
             style: .plain,
             target: self,
             action: #selector(addButtonTapped)
@@ -154,16 +154,14 @@ final class TrackersViewController: UIViewController {
         
         collectionView.dataSource = self
         collectionView.delegate = self
-        
-        
     }
     
     private func setupLayout() {
         guard let dateContainerView = navigationItem.rightBarButtonItem?.customView else { return }
         
         NSLayoutConstraint.activate([
-            // Контейнер для даты
-            dateContainerView.widthAnchor.constraint(equalToConstant: 100),
+            // Контейнер для даты - размер согласно Figma
+            dateContainerView.widthAnchor.constraint(equalToConstant: 77),
             dateContainerView.heightAnchor.constraint(equalToConstant: 34),
             
             datePicker.leadingAnchor.constraint(equalTo: dateContainerView.leadingAnchor),
@@ -239,9 +237,8 @@ final class TrackersViewController: UIViewController {
     }
     
     private func isTrackerCompletedToday(_ trackerId: UUID) -> Bool {
-        completedTrackers.contains { record in
-            record.trackerId == trackerId && Calendar.current.isDate(record.date, inSameDayAs: currentDate)
-        }
+        let todayRecord = TrackerRecord(trackerId: trackerId, date: currentDate)
+        return completedTrackers.contains(todayRecord)
     }
     
     private func addTracker(_ tracker: Tracker, toCategory title: String) {
@@ -324,12 +321,11 @@ extension TrackersViewController: TrackerCellDelegate {
         let tracker = visibleCategories[indexPath.section].trackers[indexPath.item]
         
         if isTrackerCompletedToday(tracker.id) {
-            
-            completedTrackers.removeAll { $0.trackerId == tracker.id && Calendar.current.isDate($0.date, inSameDayAs: currentDate) }
+            let recordToRemove = TrackerRecord(trackerId: tracker.id, date: currentDate)
+            completedTrackers.remove(recordToRemove)
         } else {
-            
             let newRecord = TrackerRecord(trackerId: tracker.id, date: currentDate)
-            completedTrackers.append(newRecord)
+            completedTrackers.insert(newRecord)
         }
         
         collectionView.reloadItems(at: [indexPath])
