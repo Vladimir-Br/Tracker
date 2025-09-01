@@ -38,7 +38,7 @@ final class TabBarController: UITabBarController {
         appearance.shadowColor = UIColor.systemGray4
         tabBar.standardAppearance = appearance
         tabBar.scrollEdgeAppearance = appearance
-        tabBar.tintColor = UIColor(named: "Blue")
+        tabBar.tintColor = UIColor(named: "Blue [day]")
         tabBar.unselectedItemTintColor = .systemGray
     }
 }

@@ -23,7 +23,7 @@ final class ScheduleViewController: UIViewController {
         let label = UILabel()
         label.text = "Расписание"
         label.font = .systemFont(ofSize: 16, weight: .medium)
-        label.textColor = .black // #1A1B22 практически черный
+        label.textColor = .black
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -32,7 +32,7 @@ final class ScheduleViewController: UIViewController {
     private let scheduleTableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.backgroundColor = UIColor(named: "Light Gray Background") ?? .lightGray.withAlphaComponent(0.3)
+        tableView.backgroundColor = UIColor(named: "Background [day]")
         tableView.layer.cornerRadius = 16
         tableView.isScrollEnabled = false
         tableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
@@ -43,7 +43,7 @@ final class ScheduleViewController: UIViewController {
         let button = UIButton(type: .system)
         button.setTitle("Готово", for: .normal)
         button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = .gray
+        button.backgroundColor = UIColor(named: "Gray [day]")
         button.layer.cornerRadius = 16
         button.translatesAutoresizingMaskIntoConstraints = false
         button.isEnabled = false
@@ -116,7 +116,7 @@ final class ScheduleViewController: UIViewController {
     private func checkDoneButtonState() {
         let isEnabled = !currentlySelectedDays.isEmpty
         doneButton.isEnabled = isEnabled
-        doneButton.backgroundColor = isEnabled ? .black : .gray
+        doneButton.backgroundColor = isEnabled ? .black : UIColor(named: "Gray [day]")
     }
 }
 
@@ -136,7 +136,7 @@ extension ScheduleViewController: UITableViewDataSource {
         
         let switchView = UISwitch(frame: .zero)
         switchView.setOn(currentlySelectedDays.contains(day), animated: false)
-        switchView.onTintColor = .systemBlue
+        switchView.onTintColor = UIColor(named: "Blue [day]") 
         switchView.tag = indexPath.row
         switchView.addTarget(self, action: #selector(switchToggled(_:)), for: .valueChanged)
         

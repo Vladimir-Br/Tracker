@@ -67,7 +67,7 @@ final class TrackersViewController: UIViewController {
             target: self,
             action: #selector(addButtonTapped)
         )
-        button.tintColor = UIColor(red: 0.1, green: 0.105, blue: 0.133, alpha: 1) // #1A1B22
+        button.tintColor = UIColor(named: "Black [day]")
         return button
     }()
     
@@ -75,7 +75,7 @@ final class TrackersViewController: UIViewController {
         let controller = UISearchController(searchResultsController: nil)
         controller.searchBar.placeholder = "Поиск"
         controller.searchBar.searchTextField.font = UIFont.systemFont(ofSize: 17, weight: .regular)
-        controller.searchBar.searchTextField.textColor = UIColor(red: 0.682, green: 0.686, blue: 0.706, alpha: 1) // #AEAFB4
+        controller.searchBar.searchTextField.textColor = UIColor(named: "Gray [day]")
         return controller
     }()
     
@@ -91,7 +91,7 @@ final class TrackersViewController: UIViewController {
         let label = UILabel()
         label.text = "Что будем отслеживать?"
         label.font = UIFont.systemFont(ofSize: 12, weight: .medium)
-        label.textColor = UIColor(red: 0.1, green: 0.105, blue: 0.133, alpha: 1) // #1A1B22
+        label.textColor = UIColor(named: "Black [day]")
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -106,6 +106,7 @@ final class TrackersViewController: UIViewController {
     }()
     
     // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupNavigationBar()
@@ -264,6 +265,7 @@ extension TrackersViewController: UICollectionViewDataSource {
 }
 
 // MARK: - UICollectionViewDelegateFlowLayout
+
 extension TrackersViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let availableWidth = collectionView.frame.width - 16 * 2 - 9
@@ -289,6 +291,7 @@ extension TrackersViewController: UICollectionViewDelegateFlowLayout {
 }
 
 // MARK: - TrackerCellDelegate
+
 extension TrackersViewController: TrackerCellDelegate {
     func didTapCompleteButton(for cell: TrackerCell) {
         guard let indexPath = collectionView.indexPath(for: cell) else { return }
@@ -307,6 +310,7 @@ extension TrackersViewController: TrackerCellDelegate {
 }
 
 // MARK: - NewHabitViewControllerDelegate
+
 extension TrackersViewController: NewHabitViewControllerDelegate {
     func didCreateTracker(_ tracker: Tracker, categoryTitle: String) {
         addTracker(tracker, toCategory: categoryTitle)

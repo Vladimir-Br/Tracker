@@ -13,7 +13,7 @@ final class NewHabitViewController: UIViewController {
     
     // MARK: - Colors
     
-    private let lightGrayColor = UIColor(red: 230/255.0, green: 232/255.0, blue: 235/255.0, alpha: 0.3) // #E6E8EB с 30% прозрачности
+    private let lightGrayColor = UIColor(named: "Background [day]")
     
     // MARK: - Private Properties
     
@@ -33,11 +33,11 @@ final class NewHabitViewController: UIViewController {
         let attributes: [NSAttributedString.Key: Any] = [
             .font: font,
             .paragraphStyle: paragraphStyle,
-            .kern: 0 // letter-spacing: 0px
+            .kern: 0
         ]
         
         label.attributedText = NSAttributedString(string: "Новая привычка", attributes: attributes)
-        label.textColor = UIColor(red: 0.1, green: 0.105, blue: 0.133, alpha: 1) // #1A1B22
+        label.textColor = UIColor(named: "Black [day]")
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -45,7 +45,7 @@ final class NewHabitViewController: UIViewController {
     private let nameTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Введите название трекера"
-        textField.backgroundColor = UIColor(red: 230/255.0, green: 232/255.0, blue: 235/255.0, alpha: 0.3) // #E6E8EB с 30% прозрачности
+        textField.backgroundColor = UIColor(named: "Background [day]")
         textField.layer.cornerRadius = 16
         textField.font = .systemFont(ofSize: 17)
         textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
@@ -60,7 +60,7 @@ final class NewHabitViewController: UIViewController {
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.translatesAutoresizingMaskIntoConstraints = false
         
-        tableView.backgroundColor = UIColor(red: 230/255.0, green: 232/255.0, blue: 235/255.0, alpha: 0.3) // #E6E8EB с
+        tableView.backgroundColor = UIColor(named: "Background [day]")
         tableView.layer.cornerRadius = 16
         
         tableView.isScrollEnabled = false
@@ -84,7 +84,7 @@ final class NewHabitViewController: UIViewController {
         let button = UIButton(type: .system)
         button.setTitle("Создать", for: .normal)
         button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = .gray
+        button.backgroundColor = UIColor(named: "Gray [day]")
         button.layer.cornerRadius = 16
         button.translatesAutoresizingMaskIntoConstraints = false
         button.isEnabled = false
@@ -175,7 +175,7 @@ final class NewHabitViewController: UIViewController {
         
         // Временные хардкод-значения - 14-й спринт
         let emoji = "🙂"
-        let color = UIColor.systemBlue
+        let color = UIColor(named: "Blue [day]") ?? .systemBlue
         
         let newTracker = Tracker(
             name: name,
@@ -196,7 +196,7 @@ final class NewHabitViewController: UIViewController {
         let isEnabled = isNameEntered && isScheduleSelected
         
         createButton.isEnabled = isEnabled
-        createButton.backgroundColor = isEnabled ? .black : .gray
+        createButton.backgroundColor = isEnabled ? .black : UIColor(named: "Gray [day]")
     }
 }
 
@@ -216,7 +216,7 @@ extension NewHabitViewController: UITableViewDataSource {
         
         cell.textLabel?.font = .systemFont(ofSize: 17)
         cell.detailTextLabel?.font = .systemFont(ofSize: 17)
-        cell.detailTextLabel?.textColor = .gray
+        cell.detailTextLabel?.textColor = UIColor(named: "Gray [day]")
 
         switch indexPath.row {
         case 0:
