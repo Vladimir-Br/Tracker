@@ -1,4 +1,3 @@
-
 import UIKit
 
 final class TrackersViewController: UIViewController {
@@ -12,22 +11,20 @@ final class TrackersViewController: UIViewController {
         return formatter
     }()
     
-    
     // MARK: - Properties
     private var categories: [TrackerCategory] = []
     private var completedTrackers: Set<TrackerRecord> = []
     private var currentDate: Date = Date()
+    
     private var visibleCategories: [TrackerCategory] {
         let calendar = Calendar.current
         let weekday = calendar.component(.weekday, from: currentDate)
         
         return categories.compactMap { category -> TrackerCategory? in
             let trackers = category.trackers.filter { tracker in
-                
                 if tracker.schedule.isEmpty {
                     return true
                 }
-                
                 return tracker.schedule.contains { $0.rawValue == weekday }
             }
             
@@ -38,16 +35,8 @@ final class TrackersViewController: UIViewController {
             return TrackerCategory(title: category.title, trackers: trackers)
         }
     }
-    // MARK: - UI Elements
     
-    private let titleLabel: UILabel = {
-        let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 34, weight: .bold)
-        label.textColor = UIColor(red: 0.1, green: 0.105, blue: 0.133, alpha: 1) // #1A1B22
-        label.text = "Трекеры"
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
+    // MARK: - UI Elements
     
     private let dateLabel: UILabel = {
         let label = UILabel()
@@ -82,25 +71,17 @@ final class TrackersViewController: UIViewController {
         return button
     }()
     
-    private let searchTextField: UISearchTextField = {
-        let textField = UISearchTextField()
-        let placeholderText = "Поиск"
-        let attributes: [NSAttributedString.Key: Any] = [
-            .foregroundColor: UIColor(red: 0.682, green: 0.686, blue: 0.706, alpha: 1), // #AEAFB4
-            .font: UIFont.systemFont(ofSize: 17, weight: .regular)
-        ]
-        textField.attributedPlaceholder = NSAttributedString(string: placeholderText, attributes: attributes)
-        textField.backgroundColor = UIColor(red: 118/255, green: 118/255, blue: 128/255, alpha: 0.12)
-        textField.layer.cornerRadius = 10
-        textField.layer.masksToBounds = true
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.isEnabled = false // Деактивировал поле до 17-го спринта
-        return textField
+    private lazy var searchController: UISearchController = {
+        let controller = UISearchController(searchResultsController: nil)
+        controller.searchBar.placeholder = "Поиск"
+        controller.searchBar.searchTextField.font = UIFont.systemFont(ofSize: 17, weight: .regular)
+        controller.searchBar.searchTextField.textColor = UIColor(red: 0.682, green: 0.686, blue: 0.706, alpha: 1) // #AEAFB4
+        return controller
     }()
     
     private let placeholderImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = UIImage(named: "StarCicrle")
+        imageView.image = UIImage(named: "StarCircle")
         imageView.contentMode = .scaleAspectFit
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
@@ -127,40 +108,30 @@ final class TrackersViewController: UIViewController {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupNavigationBar()
         setupUI()
         setupLayout()
         registerViews()
         updateUI()
     }
     
-    
     // MARK: - Setup
-    private func setupUI() {
-        view.backgroundColor = .white
-        navigationItem.leftBarButtonItem = addButton
+    
+    private func setupNavigationBar() {
         
+        navigationController?.navigationBar.prefersLargeTitles = true
+        title = "Трекеры"
+        navigationItem.leftBarButtonItem = addButton
         let dateContainerView = UIView()
         dateContainerView.translatesAutoresizingMaskIntoConstraints = false
         dateContainerView.addSubview(datePicker)
         dateContainerView.addSubview(dateLabel)
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: dateContainerView)
-        
-        view.addSubview(titleLabel)
-        view.addSubview(searchTextField)
-        view.addSubview(placeholderImageView)
-        view.addSubview(placeholderLabel)
-        view.addSubview(collectionView)
-        
-        collectionView.dataSource = self
-        collectionView.delegate = self
-    }
     
-    private func setupLayout() {
-        guard let dateContainerView = navigationItem.rightBarButtonItem?.customView else { return }
+        navigationItem.searchController = searchController
         
         NSLayoutConstraint.activate([
-            // Контейнер для даты - размер согласно Figma
             dateContainerView.widthAnchor.constraint(equalToConstant: 77),
             dateContainerView.heightAnchor.constraint(equalToConstant: 34),
             
@@ -172,17 +143,24 @@ final class TrackersViewController: UIViewController {
             dateLabel.leadingAnchor.constraint(equalTo: dateContainerView.leadingAnchor),
             dateLabel.trailingAnchor.constraint(equalTo: dateContainerView.trailingAnchor),
             dateLabel.topAnchor.constraint(equalTo: dateContainerView.topAnchor),
-            dateLabel.bottomAnchor.constraint(equalTo: dateContainerView.bottomAnchor),
-            
-            titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 1),
-            titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            
-            searchTextField.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 7),
-            searchTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            searchTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            searchTextField.heightAnchor.constraint(equalToConstant: 36),
-            
-            collectionView.topAnchor.constraint(equalTo: searchTextField.bottomAnchor, constant: 10),
+            dateLabel.bottomAnchor.constraint(equalTo: dateContainerView.bottomAnchor)
+        ])
+    }
+    
+    private func setupUI() {
+        view.backgroundColor = .white
+        
+        view.addSubview(placeholderImageView)
+        view.addSubview(placeholderLabel)
+        view.addSubview(collectionView)
+        
+        collectionView.dataSource = self
+        collectionView.delegate = self
+    }
+    
+    private func setupLayout() {
+        NSLayoutConstraint.activate([
+            collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
@@ -193,12 +171,11 @@ final class TrackersViewController: UIViewController {
             placeholderImageView.heightAnchor.constraint(equalToConstant: 80),
             
             placeholderLabel.topAnchor.constraint(equalTo: placeholderImageView.bottomAnchor, constant: 8),
-            placeholderLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            placeholderLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
     }
     
     private func registerViews() {
-        
         collectionView.register(TrackerCell.self, forCellWithReuseIdentifier: TrackerCell.reuseIdentifier)
         collectionView.register(HeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: HeaderView.reuseIdentifier)
     }
@@ -252,7 +229,6 @@ final class TrackersViewController: UIViewController {
 }
 
 // MARK: - UICollectionViewDataSource
-
 extension TrackersViewController: UICollectionViewDataSource {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return visibleCategories.count
@@ -288,7 +264,6 @@ extension TrackersViewController: UICollectionViewDataSource {
 }
 
 // MARK: - UICollectionViewDelegateFlowLayout
-
 extension TrackersViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let availableWidth = collectionView.frame.width - 16 * 2 - 9
@@ -314,7 +289,6 @@ extension TrackersViewController: UICollectionViewDelegateFlowLayout {
 }
 
 // MARK: - TrackerCellDelegate
-
 extension TrackersViewController: TrackerCellDelegate {
     func didTapCompleteButton(for cell: TrackerCell) {
         guard let indexPath = collectionView.indexPath(for: cell) else { return }
@@ -333,12 +307,9 @@ extension TrackersViewController: TrackerCellDelegate {
 }
 
 // MARK: - NewHabitViewControllerDelegate
-
 extension TrackersViewController: NewHabitViewControllerDelegate {
     func didCreateTracker(_ tracker: Tracker, categoryTitle: String) {
         addTracker(tracker, toCategory: categoryTitle)
         updateUI()
     }
 }
-
-
