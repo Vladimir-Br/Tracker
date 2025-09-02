@@ -28,7 +28,7 @@ final class TrackersViewController: UIViewController {
                 return tracker.schedule.contains { $0.rawValue == weekday }
             }
             
-            if trackers.isEmpty {
+            guard !trackers.isEmpty else {
                 return nil
             }
             

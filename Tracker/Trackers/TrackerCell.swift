@@ -18,10 +18,20 @@ final class TrackerCell: UICollectionViewCell {
         return view
     }()
     
+    // Белая подложка под emoji
+    private let emojiBackgroundView: UIView = {
+        let view = UIView()
+        view.backgroundColor = UIColor.white.withAlphaComponent(0.3)
+        view.layer.cornerRadius = 12
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
     private let emojiLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 24)
+        label.font = UIFont.systemFont(ofSize: 16)
         label.textAlignment = .center
+        label.adjustsFontSizeToFitWidth = true
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -67,29 +77,31 @@ final class TrackerCell: UICollectionViewCell {
     // MARK: - Setup
     
     private func setupUI() {
-        
         contentView.addSubview(cardView)
         contentView.addSubview(daysCounterLabel)
         contentView.addSubview(completeButton)
         
-        cardView.addSubview(emojiLabel)
+        cardView.addSubview(emojiBackgroundView)
+        emojiBackgroundView.addSubview(emojiLabel)
         cardView.addSubview(nameLabel)
     }
     
     private func setupLayout() {
         NSLayoutConstraint.activate([
-            
             cardView.topAnchor.constraint(equalTo: contentView.topAnchor),
             cardView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             cardView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             cardView.heightAnchor.constraint(equalToConstant: 90),
+           
+            emojiBackgroundView.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 12),
+            emojiBackgroundView.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 12),
+            emojiBackgroundView.widthAnchor.constraint(equalToConstant: 24),
+            emojiBackgroundView.heightAnchor.constraint(equalToConstant: 24),
             
-            emojiLabel.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 12),
-            emojiLabel.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 12),
-            emojiLabel.widthAnchor.constraint(equalToConstant: 24),
-            emojiLabel.heightAnchor.constraint(equalToConstant: 24),
+            emojiLabel.centerXAnchor.constraint(equalTo: emojiBackgroundView.centerXAnchor),
+            emojiLabel.centerYAnchor.constraint(equalTo: emojiBackgroundView.centerYAnchor),
             
-            nameLabel.topAnchor.constraint(equalTo: emojiLabel.bottomAnchor, constant: 8),
+            nameLabel.topAnchor.constraint(equalTo: emojiBackgroundView.bottomAnchor, constant: 8),
             nameLabel.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 12),
             nameLabel.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -12),
             nameLabel.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -12),
@@ -100,7 +112,7 @@ final class TrackerCell: UICollectionViewCell {
             completeButton.heightAnchor.constraint(equalToConstant: 34),
             
             daysCounterLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 12),
-            daysCounterLabel.centerYAnchor.constraint(equalTo: completeButton.centerYAnchor) 
+            daysCounterLabel.centerYAnchor.constraint(equalTo: completeButton.centerYAnchor)
         ])
     }
     
@@ -117,6 +129,8 @@ final class TrackerCell: UICollectionViewCell {
         completeButton.tintColor = .white
         completeButton.backgroundColor = tracker.color
         completeButton.alpha = isCompleted ? 0.3 : 1.0
+        completeButton.imageView?.contentMode = .scaleAspectFit
+        completeButton.imageEdgeInsets = UIEdgeInsets(top: 11.5, left: 11.5, bottom: 11.5, right: 11.5)
         
         let calendar = Calendar.current
         let isFutureDay = calendar.startOfDay(for: date) > calendar.startOfDay(for: Date())
