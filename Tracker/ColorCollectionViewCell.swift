@@ -1,38 +1,38 @@
-import UIKit
 
-// MARK: - ColorCollectionViewCell
+import UIKit
 
 final class ColorCollectionViewCell: UICollectionViewCell {
     
     // MARK: - Static Properties
-    
     static let reuseIdentifier = "ColorCollectionViewCell"
     
     // MARK: - UI Elements
     
-    private let colorView: UIView = {
+    private let outerFrameView: UIView = {
         let view = UIView()
-        view.layer.cornerRadius = LayoutConstants.cellCornerRadius
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }()
-    
-    private let selectionBorderView: UIView = {
-        let view = UIView()
-        view.backgroundColor = .clear
-        view.layer.borderWidth = 3
-        view.layer.cornerRadius = LayoutConstants.cellCornerRadius
+        view.layer.cornerRadius = 11
         view.isHidden = true
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
-    // MARK: - Properties
+    private let whiteBackgroundView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .white
+        view.layer.cornerRadius = 8
+        view.isHidden = true
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
     
-    private var color: UIColor = .clear
+    private let colorView: UIView = {
+        let view = UIView()
+        view.layer.cornerRadius = 8
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
     
     // MARK: - Initialization
-    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
@@ -44,47 +44,51 @@ final class ColorCollectionViewCell: UICollectionViewCell {
     }
     
     // MARK: - Setup
-    
     private func setupUI() {
+        
+        contentView.addSubview(outerFrameView)
+        contentView.addSubview(whiteBackgroundView)
         contentView.addSubview(colorView)
-        contentView.addSubview(selectionBorderView)
     }
     
     private func setupLayout() {
         NSLayoutConstraint.activate([
             
-            colorView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            colorView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            colorView.widthAnchor.constraint(equalToConstant: LayoutConstants.cellSize),
-            colorView.heightAnchor.constraint(equalToConstant: LayoutConstants.cellSize),
+            outerFrameView.widthAnchor.constraint(equalToConstant: 52),
+            outerFrameView.heightAnchor.constraint(equalToConstant: 52),
+            outerFrameView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            outerFrameView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             
-            selectionBorderView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            selectionBorderView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            selectionBorderView.widthAnchor.constraint(equalToConstant: LayoutConstants.cellSize),
-            selectionBorderView.heightAnchor.constraint(equalToConstant: LayoutConstants.cellSize)
+            whiteBackgroundView.widthAnchor.constraint(equalToConstant: 46),
+            whiteBackgroundView.heightAnchor.constraint(equalToConstant: 46),
+            whiteBackgroundView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            whiteBackgroundView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+
+            colorView.widthAnchor.constraint(equalToConstant: 40),
+            colorView.heightAnchor.constraint(equalToConstant: 40),
+            colorView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            colorView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
         ])
     }
     
     // MARK: - Public Methods
     
     func configure(with color: UIColor) {
-        self.color = color
+        
         colorView.backgroundColor = color
+        outerFrameView.backgroundColor = color.withAlphaComponent(0.3)
     }
     
     func setSelected(_ selected: Bool) {
-        selectionBorderView.isHidden = !selected
-        if selected {
-            selectionBorderView.layer.borderColor = color.cgColor
-        }
+        
+        outerFrameView.isHidden = !selected
+        whiteBackgroundView.isHidden = !selected
     }
     
     // MARK: - Reuse
     
     override func prepareForReuse() {
         super.prepareForReuse()
-        color = .clear
-        colorView.backgroundColor = .clear
         setSelected(false)
     }
 }
