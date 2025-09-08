@@ -127,7 +127,7 @@ final class NewHabitViewController: UIViewController {
         layout.sectionInset = UIEdgeInsets(
             top: 24,
             left: 0,
-            bottom: 24, 
+            bottom: 24,
             right: 0
         )
         
