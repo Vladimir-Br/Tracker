@@ -1,16 +1,19 @@
 
 import UIKit
-import CoreData
 
 final class StatisticsViewController: UIViewController {
     
     // MARK: - Properties
     private let coreDataManager: CoreDataManager
+    private let trackerStore: TrackerStore
+    private let recordStore: TrackerRecordStore
     
     // MARK: - Initialization
     
     init(coreDataManager: CoreDataManager) {
         self.coreDataManager = coreDataManager
+        self.trackerStore = TrackerStore(context: coreDataManager.viewContext)
+        self.recordStore = TrackerRecordStore(context: coreDataManager.viewContext)
         super.init(nibName: nil, bundle: nil)
     }
     

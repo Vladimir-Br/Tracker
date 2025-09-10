@@ -1,6 +1,5 @@
 
 import UIKit
-import CoreData
 
 protocol NewHabitViewControllerDelegate: AnyObject {
     func didCreateTracker(_ tracker: Tracker, categoryTitle: String)
@@ -9,7 +8,10 @@ protocol NewHabitViewControllerDelegate: AnyObject {
 final class NewHabitViewController: UIViewController {
     
     // MARK: - Properties
+    
     private let coreDataManager: CoreDataManager
+    private let trackerStore: TrackerStore
+    private let categoryStore: TrackerCategoryStore
     
     // MARK: - Delegate
     
@@ -23,6 +25,8 @@ final class NewHabitViewController: UIViewController {
     
     init(coreDataManager: CoreDataManager) {
         self.coreDataManager = coreDataManager
+        self.trackerStore = TrackerStore(context: coreDataManager.viewContext)
+        self.categoryStore = TrackerCategoryStore(context: coreDataManager.viewContext)
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -323,7 +327,11 @@ final class NewHabitViewController: UIViewController {
             schedule: self.schedule
         )
         
-        delegate?.didCreateTracker(newTracker, categoryTitle: "Важное")
+        // Категория остается захардкоженной как "Важное"
+        let categoryTitle = "Важное"
+        
+        // Уведомляем делегата - он сам сохранит трекер в Core Data
+        delegate?.didCreateTracker(newTracker, categoryTitle: categoryTitle)
         dismiss(animated: true)
     }
     

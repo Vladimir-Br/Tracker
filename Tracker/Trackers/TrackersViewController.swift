@@ -1,5 +1,4 @@
 import UIKit
-import CoreData
 
 final class TrackersViewController: UIViewController {
     
@@ -14,6 +13,9 @@ final class TrackersViewController: UIViewController {
     
     // MARK: - Properties
     private let coreDataManager: CoreDataManager
+    private let trackerStore: TrackerStore
+    private let categoryStore: TrackerCategoryStore
+    private let recordStore: TrackerRecordStore
     private var categories: [TrackerCategory] = []
     private var completedTrackers: Set<TrackerRecord> = []
     private var currentDate: Date = Date()
@@ -22,6 +24,9 @@ final class TrackersViewController: UIViewController {
     
     init(coreDataManager: CoreDataManager) {
         self.coreDataManager = coreDataManager
+        self.trackerStore = TrackerStore(context: coreDataManager.viewContext)
+        self.categoryStore = TrackerCategoryStore(context: coreDataManager.viewContext)
+        self.recordStore = TrackerRecordStore(context: coreDataManager.viewContext)
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -45,7 +50,7 @@ final class TrackersViewController: UIViewController {
                 return nil
             }
             
-            return TrackerCategory(title: category.title, trackers: trackers)
+            return TrackerCategory(id: UUID(), title: category.title, trackers: trackers)
         }
     }
     
@@ -126,6 +131,7 @@ final class TrackersViewController: UIViewController {
         setupUI()
         setupLayout()
         registerViews()
+        loadData()
         updateUI()
     }
     
@@ -210,6 +216,19 @@ final class TrackersViewController: UIViewController {
     
     // MARK: - Private Methods
     
+    private func loadData() {
+        loadCategories()
+        loadCompletedTrackers()
+    }
+    
+    private func loadCategories() {
+        categories = []
+    }
+    
+    private func loadCompletedTrackers() {
+        completedTrackers = []
+    }
+    
     private func updateDateLabel(with date: Date) {
         dateLabel.text = Self.dateFormatter.string(from: date)
     }
@@ -228,21 +247,26 @@ final class TrackersViewController: UIViewController {
     }
     
     private func isTrackerCompletedToday(_ trackerId: UUID) -> Bool {
-        let todayRecord = TrackerRecord(trackerId: trackerId, date: currentDate)
-        return completedTrackers.contains(todayRecord)
+        return false
     }
     
     private func addTracker(_ tracker: Tracker, toCategory title: String) {
-        if let index = categories.firstIndex(where: { $0.title == title }) {
-            let oldCategory = categories[index]
-            categories[index] = TrackerCategory(title: title, trackers: oldCategory.trackers + [tracker])
-        } else {
-            categories.append(TrackerCategory(title: title, trackers: [tracker]))
+        do {
+            
+            let categoryId = try categoryStore.add(title: title)
+            
+            try trackerStore.add(tracker, categoryId: categoryId)
+            
+            loadData()
+            
+        } catch {
+            print("❌ Ошибка добавления трекера: \(error.localizedDescription)")
         }
     }
 }
 
 // MARK: - UICollectionViewDataSource
+
 extension TrackersViewController: UICollectionViewDataSource {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return visibleCategories.count
@@ -310,15 +334,21 @@ extension TrackersViewController: TrackerCellDelegate {
         guard let indexPath = collectionView.indexPath(for: cell) else { return }
         let tracker = visibleCategories[indexPath.section].trackers[indexPath.item]
         
-        if isTrackerCompletedToday(tracker.id) {
-            let recordToRemove = TrackerRecord(trackerId: tracker.id, date: currentDate)
-            completedTrackers.remove(recordToRemove)
-        } else {
-            let newRecord = TrackerRecord(trackerId: tracker.id, date: currentDate)
-            completedTrackers.insert(newRecord)
+        do {
+            if isTrackerCompletedToday(tracker.id) {
+                
+                try recordStore.delete(trackerId: tracker.id, date: currentDate)
+            } else {
+                
+                let newRecord = TrackerRecord(trackerId: tracker.id, date: currentDate)
+                try recordStore.add(newRecord)
+            }
+            
+            collectionView.reloadItems(at: [indexPath])
+            
+        } catch {
+            print("❌ Ошибка изменения статуса трекера: \(error.localizedDescription)")
         }
-        
-        collectionView.reloadItems(at: [indexPath])
     }
 }
 

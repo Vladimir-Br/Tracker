@@ -9,7 +9,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         
-        // Получаем CoreDataManager из AppDelegate
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         guard let coreDataManager = appDelegate.coreDataManager else {
             fatalError("CoreDataManager не инициализирован")
