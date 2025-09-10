@@ -1,11 +1,15 @@
 
 import UIKit
+import CoreData
 
 protocol NewHabitViewControllerDelegate: AnyObject {
     func didCreateTracker(_ tracker: Tracker, categoryTitle: String)
 }
 
 final class NewHabitViewController: UIViewController {
+    
+    // MARK: - Properties
+    private let coreDataManager: CoreDataManager
     
     // MARK: - Delegate
     
@@ -14,6 +18,17 @@ final class NewHabitViewController: UIViewController {
     // MARK: - Colors
     
     private let lightGrayColor = UIColor(named: "Background [day]")
+    
+    // MARK: - Initialization
+    
+    init(coreDataManager: CoreDataManager) {
+        self.coreDataManager = coreDataManager
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     // MARK: - Private Properties
     

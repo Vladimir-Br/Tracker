@@ -1,4 +1,5 @@
 import UIKit
+import CoreData
 
 final class TrackersViewController: UIViewController {
     
@@ -12,9 +13,21 @@ final class TrackersViewController: UIViewController {
     }()
     
     // MARK: - Properties
+    private let coreDataManager: CoreDataManager
     private var categories: [TrackerCategory] = []
     private var completedTrackers: Set<TrackerRecord> = []
     private var currentDate: Date = Date()
+    
+    // MARK: - Initialization
+    
+    init(coreDataManager: CoreDataManager) {
+        self.coreDataManager = coreDataManager
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     private var visibleCategories: [TrackerCategory] {
         let calendar = Calendar.current
@@ -184,7 +197,7 @@ final class TrackersViewController: UIViewController {
     // MARK: - Actions
     
     @objc private func addButtonTapped() {
-        let newHabitVC = NewHabitViewController()
+        let newHabitVC = NewHabitViewController(coreDataManager: coreDataManager)
         newHabitVC.delegate = self
         let navigationController = UINavigationController(rootViewController: newHabitVC)
         present(navigationController, animated: true)
