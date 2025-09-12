@@ -16,6 +16,22 @@ struct Tracker {
         self.schedule = schedule
     }
     
+    init?(from coreDataObject: TrackerCoreData) {
+        guard let id = coreDataObject.trackerId,
+              let name = coreDataObject.name,
+              let emoji = coreDataObject.emoji,
+              let colorData = coreDataObject.color as? Data,
+              let color = try? NSKeyedUnarchiver.unarchivedObject(ofClass: UIColor.self, from: colorData),
+              let scheduleData = coreDataObject.schedule as? Data else {
+            return nil
+        }
+        
+        let scheduleInts = (try? JSONDecoder().decode([Int].self, from: scheduleData)) ?? []
+        let schedule = scheduleInts.compactMap { Weekday(rawValue: $0) }
+        
+        self.init(id: id, name: name, color: color, emoji: emoji, schedule: schedule)
+    }
+    
     enum Weekday: Int, CaseIterable {
         case sunday = 1
         case monday = 2

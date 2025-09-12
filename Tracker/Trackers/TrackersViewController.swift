@@ -28,6 +28,8 @@ final class TrackersViewController: UIViewController {
         self.categoryStore = TrackerCategoryStore(context: coreDataManager.viewContext)
         self.recordStore = TrackerRecordStore(context: coreDataManager.viewContext)
         super.init(nibName: nil, bundle: nil)
+        
+       setupDelegates()
     }
     
     required init?(coder: NSCoder) {
@@ -50,7 +52,7 @@ final class TrackersViewController: UIViewController {
                 return nil
             }
             
-            return TrackerCategory(id: UUID(), title: category.title, trackers: trackers)
+            return TrackerCategory(id: category.id, title: category.title, trackers: trackers)
         }
     }
     
@@ -138,7 +140,6 @@ final class TrackersViewController: UIViewController {
     // MARK: - Setup
     
     private func setupNavigationBar() {
-        
         navigationController?.navigationBar.prefersLargeTitles = true
         title = "Трекеры"
         navigationItem.leftBarButtonItem = addButton
@@ -222,11 +223,20 @@ final class TrackersViewController: UIViewController {
     }
     
     private func loadCategories() {
-        categories = []
+        do {
+            categories = try categoryStore.fetchAll()
+        } catch {
+            categories = []
+        }
     }
     
     private func loadCompletedTrackers() {
-        completedTrackers = []
+        do {
+            let records = try recordStore.fetchAll()
+            completedTrackers = Set(records)
+        } catch {
+            completedTrackers = []
+        }
     }
     
     private func updateDateLabel(with date: Date) {
@@ -247,20 +257,32 @@ final class TrackersViewController: UIViewController {
     }
     
     private func isTrackerCompletedToday(_ trackerId: UUID) -> Bool {
-        return false
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: currentDate)
+        
+        return completedTrackers.contains { record in
+            record.trackerId == trackerId && 
+            calendar.isDate(record.date, inSameDayAs: today)
+        }
     }
     
     private func addTracker(_ tracker: Tracker, toCategory title: String) {
         do {
+            var existingCategory: TrackerCategory?
             
-            let categoryId = try categoryStore.add(title: title)
+            let allCategories = try categoryStore.fetchAll()
+            existingCategory = allCategories.first { $0.title == title }
+            
+            let categoryId: UUID
+            if let category = existingCategory {
+                categoryId = category.id
+            } else {
+                categoryId = try categoryStore.add(title: title)
+            }
             
             try trackerStore.add(tracker, categoryId: categoryId)
             
-            loadData()
-            
         } catch {
-            print("❌ Ошибка добавления трекера: \(error.localizedDescription)")
         }
     }
 }
@@ -334,20 +356,18 @@ extension TrackersViewController: TrackerCellDelegate {
         guard let indexPath = collectionView.indexPath(for: cell) else { return }
         let tracker = visibleCategories[indexPath.section].trackers[indexPath.item]
         
+        let record = TrackerRecord(trackerId: tracker.id, date: currentDate)
+        
         do {
-            if isTrackerCompletedToday(tracker.id) {
-                
+            if completedTrackers.contains(record) {
                 try recordStore.delete(trackerId: tracker.id, date: currentDate)
+                completedTrackers.remove(record)
             } else {
-                
-                let newRecord = TrackerRecord(trackerId: tracker.id, date: currentDate)
-                try recordStore.add(newRecord)
+                try recordStore.add(record)
+                completedTrackers.insert(record)
             }
             
-            collectionView.reloadItems(at: [indexPath])
-            
         } catch {
-            print("❌ Ошибка изменения статуса трекера: \(error.localizedDescription)")
         }
     }
 }
@@ -356,7 +376,24 @@ extension TrackersViewController: TrackerCellDelegate {
 
 extension TrackersViewController: NewHabitViewControllerDelegate {
     func didCreateTracker(_ tracker: Tracker, categoryTitle: String) {
-        addTracker(tracker, toCategory: categoryTitle)
-        updateUI()
+        addTracker(tracker, toCategory: "Важное")
+    }
+}
+
+// MARK: - Store Delegates
+
+extension TrackersViewController: StoreDelegate {
+    
+    func storeDidChange() {
+        DispatchQueue.main.async { [weak self] in
+            self?.loadData()
+            self?.updateUI()
+        }
+    }
+
+    private func setupDelegates() {
+        trackerStore.delegate = self
+        categoryStore.delegate = self
+        recordStore.delegate = self
     }
 }
