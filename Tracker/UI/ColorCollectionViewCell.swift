@@ -1,6 +1,5 @@
 
 import UIKit
-import CoreData
 
 final class ColorCollectionViewCell: UICollectionViewCell {
     

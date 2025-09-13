@@ -1,8 +1,8 @@
 
 import CoreData
 
-final class TrackerRecordStore: NSObject {
-    private let context: NSManagedObjectContext
+final class TrackerRecordStore: NSObject, Storable {
+    let context: NSManagedObjectContext
     weak var delegate: StoreDelegate?
     
     // MARK: - NSFetchedResultsController
@@ -53,13 +53,13 @@ final class TrackerRecordStore: NSObject {
         let calendar = Calendar.current
         coreDataRecord.date = calendar.startOfDay(for: record.date)
         coreDataRecord.tracker = tracker
-        try save()
+        try saveContext()
     }
     
     func delete(trackerId: UUID, date: Date) throws {
         let record = try findRecord(trackerId: trackerId, date: date)
         context.delete(record)
-        try save()
+        try saveContext()
     }
     
     func exists(trackerId: UUID, date: Date) -> Bool {
@@ -116,16 +116,6 @@ final class TrackerRecordStore: NSObject {
         return record
     }
     
-    private func save() throws {
-        guard context.hasChanges else { return }
-        
-        do {
-            try context.save()
-        } catch {
-            context.rollback()
-            throw error 
-        }
-    }
 }
 
 // MARK: - NSFetchedResultsControllerDelegate

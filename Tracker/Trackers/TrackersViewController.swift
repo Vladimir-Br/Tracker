@@ -29,7 +29,7 @@ final class TrackersViewController: UIViewController {
         self.recordStore = TrackerRecordStore(context: coreDataManager.viewContext)
         super.init(nibName: nil, bundle: nil)
         
-       setupDelegates()
+        setupDelegates()
     }
     
     required init?(coder: NSCoder) {
@@ -149,7 +149,7 @@ final class TrackersViewController: UIViewController {
         dateContainerView.addSubview(dateLabel)
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: dateContainerView)
-    
+        
         navigationItem.searchController = searchController
         
         NSLayoutConstraint.activate([
@@ -388,13 +388,17 @@ extension TrackersViewController: NewHabitViewControllerDelegate {
 
 extension TrackersViewController: StoreDelegate {
     
+    var delegateCollectionView: UICollectionView? {
+        return collectionView
+    }
+    
     func storeDidChange() {
         DispatchQueue.main.async { [weak self] in
             self?.loadData()
             self?.updateUI()
         }
     }
-
+    
     private func setupDelegates() {
         trackerStore.delegate = self
         categoryStore.delegate = self

@@ -2,13 +2,33 @@
 import CoreData
 import UIKit
 
+protocol Storable: AnyObject {
+    var context: NSManagedObjectContext { get }
+    func saveContext() throws
+}
+
+extension Storable {
+    func saveContext() throws {
+        guard context.hasChanges else { return }
+        
+        do {
+            try context.save()
+        } catch {
+            context.rollback()
+            throw error
+        }
+    }
+}
+
 protocol StoreDelegate: AnyObject {
+    var delegateCollectionView: UICollectionView? { get }
     func storeDidChange()
 }
 
-final class TrackerStore: NSObject {
-    private let context: NSManagedObjectContext
+final class TrackerStore: NSObject, Storable {
+    let context: NSManagedObjectContext
     weak var delegate: StoreDelegate?
+    private var pendingChanges: [() -> Void] = []
     
     // MARK: - NSFetchedResultsController
     
@@ -60,19 +80,19 @@ final class TrackerStore: NSObject {
         coreDataTracker.configure(from: tracker)
         coreDataTracker.category = category
         
-        try save()
+        try saveContext()
     }
     
     func update(_ tracker: Tracker) throws {
         let coreDataTracker = try findTracker(by: tracker.id)
         coreDataTracker.configure(from: tracker)
-        try save()
+        try saveContext()
     }
     
     func delete(trackerId: UUID) throws {
         let tracker = try findTracker(by: trackerId)
         context.delete(tracker)
-        try save()
+        try saveContext()
     }
     
     // MARK: - Private Methods
@@ -103,16 +123,6 @@ final class TrackerStore: NSObject {
         return category
     }
     
-    private func save() throws {
-        guard context.hasChanges else { return }
-        
-        do {
-            try context.save()
-        } catch {
-            context.rollback()
-            throw error
-        }
-    }
 }
 
 // MARK: - TrackerCoreData Extensions
@@ -137,17 +147,52 @@ extension TrackerCoreData {
 
 extension TrackerStore: NSFetchedResultsControllerDelegate {
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        pendingChanges.removeAll()
+    }
+    
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>,
+                    didChange anObject: Any,
+                    at indexPath: IndexPath?,
+                    for type: NSFetchedResultsChangeType,
+                    newIndexPath: IndexPath?) {
+        switch type {
+        case .insert:
+            if let newIndexPath = newIndexPath {
+                pendingChanges.append { [weak self] in
+                    self?.delegate?.delegateCollectionView?.insertItems(at: [newIndexPath])
+                }
+            }
+        case .delete:
+            if let indexPath = indexPath {
+                pendingChanges.append { [weak self] in
+                    self?.delegate?.delegateCollectionView?.deleteItems(at: [indexPath])
+                }
+            }
+        case .update:
+            if let indexPath = indexPath {
+                pendingChanges.append { [weak self] in
+                    self?.delegate?.delegateCollectionView?.reloadItems(at: [indexPath])
+                }
+            }
+        case .move:
+            if let indexPath = indexPath, let newIndexPath = newIndexPath {
+                pendingChanges.append { [weak self] in
+                    self?.delegate?.delegateCollectionView?.moveItem(at: indexPath, to: newIndexPath)
+                }
+            }
+        @unknown default:
+            break
+        }
     }
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        delegate?.storeDidChange()
-    }
-    
-    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, 
-                   didChange anObject: Any, 
-                   at indexPath: IndexPath?, 
-                   for type: NSFetchedResultsChangeType, 
-                   newIndexPath: IndexPath?) {
+        guard let collectionView = delegate?.delegateCollectionView else { return }
         
+        collectionView.performBatchUpdates({
+            pendingChanges.forEach { $0() }
+        }, completion: { [weak self] _ in
+            self?.pendingChanges.removeAll()
+            self?.delegate?.storeDidChange()
+        })
     }
 }

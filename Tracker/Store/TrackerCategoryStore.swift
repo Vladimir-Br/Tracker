@@ -2,8 +2,8 @@
 import CoreData
 import UIKit
 
-final class TrackerCategoryStore: NSObject {
-    private let context: NSManagedObjectContext
+final class TrackerCategoryStore: NSObject, Storable {
+    let context: NSManagedObjectContext
     weak var delegate: StoreDelegate?
     
     // MARK: - NSFetchedResultsController
@@ -54,20 +54,20 @@ final class TrackerCategoryStore: NSObject {
         let categoryId = UUID()
         category.categoryId = categoryId
         category.title = title
-        try save()
+        try saveContext()
         return categoryId
     }
     
     func update(id: UUID, title: String) throws {
         let category = try findCategory(by: id)
         category.title = title
-        try save()
+        try saveContext()
     }
     
     func delete(id: UUID) throws {
         let category = try findCategory(by: id)
         context.delete(category)
-        try save()
+        try saveContext()
     }
     
     // MARK: - Private Methods
@@ -101,16 +101,6 @@ final class TrackerCategoryStore: NSObject {
         return category
     }
     
-    private func save() throws {
-        guard context.hasChanges else { return }
-        
-        do {
-            try context.save()
-        } catch {
-            context.rollback()
-            throw error 
-        }
-    }
 }
 
 // MARK: - NSFetchedResultsControllerDelegate
