@@ -1,9 +1,17 @@
 
 import CoreData
 
+// MARK: - TrackerRecordStoreDelegate
+
+protocol TrackerRecordStoreDelegate: AnyObject {
+    func trackerRecordStoreDidUpdateRecords(_ store: TrackerRecordStore)
+}
+
+// MARK: - TrackerRecordStore
+
 final class TrackerRecordStore: NSObject, Storable {
     let context: NSManagedObjectContext
-    weak var delegate: StoreDelegate?
+    weak var delegate: TrackerRecordStoreDelegate?
     
     // MARK: - NSFetchedResultsController
     
@@ -25,6 +33,8 @@ final class TrackerRecordStore: NSObject, Storable {
         return controller
     }()
     
+    // MARK: - Initialization
+    
     init(context: NSManagedObjectContext) {
         self.context = context
     }
@@ -32,9 +42,7 @@ final class TrackerRecordStore: NSObject, Storable {
     // MARK: - CRUD Operations
     
     func fetchAll() throws -> [TrackerRecord] {
-        guard let coreDataRecords = fetchedResultsController.fetchedObjects else {
-            return []
-        }
+        guard let coreDataRecords = fetchedResultsController.fetchedObjects else { return [] }
         return coreDataRecords.compactMap { mapRecord($0) }
     }
     
@@ -76,9 +84,7 @@ final class TrackerRecordStore: NSObject, Storable {
     private func mapRecord(_ coreDataRecord: TrackerRecordCoreData) -> TrackerRecord? {
         guard let date = coreDataRecord.date,
               let tracker = coreDataRecord.tracker,
-              let trackerId = tracker.trackerId else {
-            return nil
-        }
+              let trackerId = tracker.trackerId else { return nil }
         
         return TrackerRecord(
             trackerId: trackerId,
@@ -90,10 +96,7 @@ final class TrackerRecordStore: NSObject, Storable {
         let request = TrackerCoreData.fetchRequest()
         request.predicate = NSPredicate(format: "%K == %@", #keyPath(TrackerCoreData.trackerId), id as CVarArg)
         let results = try context.fetch(request)
-        guard let tracker = results.first else {
-            throw StoreError.trackerNotFound
-        }
-        
+        guard let tracker = results.first else { throw StoreError.trackerNotFound }
         return tracker
     }
     
@@ -102,37 +105,33 @@ final class TrackerRecordStore: NSObject, Storable {
         let calendar = Calendar.current
         let startOfDay = calendar.startOfDay(for: date)
         request.predicate = NSPredicate(format: "%K.%K == %@ AND %K == %@",
-                                       #keyPath(TrackerRecordCoreData.tracker), 
-                                       #keyPath(TrackerCoreData.trackerId), 
+                                       #keyPath(TrackerRecordCoreData.tracker),
+                                       #keyPath(TrackerCoreData.trackerId),
                                        trackerId as CVarArg,
-                                       #keyPath(TrackerRecordCoreData.date), 
+                                       #keyPath(TrackerRecordCoreData.date),
                                        startOfDay as CVarArg)
-       
         let results = try context.fetch(request)
-        guard let record = results.first else {
-            throw StoreError.recordNotFound
-        }
-        
+        guard let record = results.first else { throw StoreError.recordNotFound }
         return record
     }
-    
 }
 
 // MARK: - NSFetchedResultsControllerDelegate
 
 extension TrackerRecordStore: NSFetchedResultsControllerDelegate {
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        
     }
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        delegate?.storeDidChange()
+        delegate?.trackerRecordStoreDidUpdateRecords(self)
     }
     
-    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, 
-                   didChange anObject: Any, 
-                   at indexPath: IndexPath?, 
-                   for type: NSFetchedResultsChangeType, 
-                   newIndexPath: IndexPath?) {
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>,
+                    didChange anObject: Any,
+                    at indexPath: IndexPath?,
+                    for type: NSFetchedResultsChangeType,
+                    newIndexPath: IndexPath?) {
         
     }
 }

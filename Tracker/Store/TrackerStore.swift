@@ -1,34 +1,33 @@
 
 import CoreData
-import UIKit
 
-protocol Storable: AnyObject {
-    var context: NSManagedObjectContext { get }
-    func saveContext() throws
+// MARK: - TrackerStoreUpdate
+
+struct TrackerStoreUpdate {
+    let insertedIndexesSection: IndexSet
+    let deletedIndexesSection: IndexSet
+    let insertedIndexPath: [IndexPath]
+    let deletedIndexPath: [IndexPath]
+    let movedIndexPath: [(IndexPath, IndexPath)]
 }
 
-extension Storable {
-    func saveContext() throws {
-        guard context.hasChanges else { return }
-        
-        do {
-            try context.save()
-        } catch {
-            context.rollback()
-            throw error
-        }
-    }
+// MARK: - TrackerStoreDelegate
+
+protocol TrackerStoreDelegate: AnyObject {
+    func store(_ store: TrackerStore, didUpdate update: TrackerStoreUpdate)
 }
 
-protocol StoreDelegate: AnyObject {
-    var delegateCollectionView: UICollectionView? { get }
-    func storeDidChange()
-}
+// MARK: - TrackerStore
 
 final class TrackerStore: NSObject, Storable {
     let context: NSManagedObjectContext
-    weak var delegate: StoreDelegate?
-    private var pendingChanges: [() -> Void] = []
+    weak var delegate: TrackerStoreDelegate?
+    
+    private var insertedIndexesSection: IndexSet?
+    private var insertedIndexPath: [IndexPath]?
+    private var deletedIndexPath: [IndexPath]?
+    private var deletedIndexesSection: IndexSet?
+    private var movedIndexPath: [(IndexPath, IndexPath)]?
     
     // MARK: - NSFetchedResultsController
     
@@ -59,9 +58,11 @@ final class TrackerStore: NSObject, Storable {
     // MARK: - CRUD Operations
     
     func fetchAll() throws -> [Tracker] {
-        guard let coreDataTrackers = fetchedResultsController.fetchedObjects else {
-            return []
-        }
+        guard let coreDataTrackers = fetchedResultsController.fetchedObjects else { return [] }
+        
+        // Мигрируем трекеры с nil расписанием
+        try migrateTrackersWithNilSchedule(coreDataTrackers)
+        
         return coreDataTrackers.compactMap { mapTracker($0) }
     }
     
@@ -79,7 +80,6 @@ final class TrackerStore: NSObject, Storable {
         let coreDataTracker = TrackerCoreData(context: context)
         coreDataTracker.configure(from: tracker)
         coreDataTracker.category = category
-        
         try saveContext()
     }
     
@@ -97,6 +97,21 @@ final class TrackerStore: NSObject, Storable {
     
     // MARK: - Private Methods
     
+    private func migrateTrackersWithNilSchedule(_ coreDataTrackers: [TrackerCoreData]) throws {
+        var needsSave = false
+        for tracker in coreDataTrackers {
+            if tracker.schedule == nil {
+                // Устанавливаем пустое расписание только для трекеров без расписания
+                let emptyScheduleData = try JSONEncoder().encode([Int]())
+                tracker.schedule = emptyScheduleData as NSData
+                needsSave = true
+            }
+        }
+        if needsSave {
+            try saveContext()
+        }
+    }
+    
     private func mapTracker(_ coreDataTracker: TrackerCoreData) -> Tracker? {
         return Tracker(from: coreDataTracker)
     }
@@ -105,10 +120,7 @@ final class TrackerStore: NSObject, Storable {
         let request = TrackerCoreData.fetchRequest()
         request.predicate = NSPredicate(format: "%K == %@", #keyPath(TrackerCoreData.trackerId), id as CVarArg)
         let results = try context.fetch(request)
-        guard let tracker = results.first else {
-            throw StoreError.trackerNotFound
-        }
-        
+        guard let tracker = results.first else { throw StoreError.trackerNotFound }
         return tracker
     }
     
@@ -116,13 +128,9 @@ final class TrackerStore: NSObject, Storable {
         let request = TrackerCategoryCoreData.fetchRequest()
         request.predicate = NSPredicate(format: "%K == %@", #keyPath(TrackerCategoryCoreData.categoryId), id as CVarArg)
         let results = try context.fetch(request)
-        guard let category = results.first else {
-            throw StoreError.categoryNotFound
-        }
-        
+        guard let category = results.first else { throw StoreError.categoryNotFound }
         return category
     }
-    
 }
 
 // MARK: - TrackerCoreData Extensions
@@ -132,13 +140,20 @@ extension TrackerCoreData {
         self.trackerId = tracker.id
         self.name = tracker.name
         self.emoji = tracker.emoji
-        if let colorData = try? NSKeyedArchiver.archivedData(withRootObject: tracker.color, requiringSecureCoding: true) {
+        
+        // Преобразуем цвет в HEX-строку (например, "#FF0000")
+        let colorHexString = tracker.color.hexString
+        if let colorData = colorHexString.data(using: .utf8) {
             self.color = colorData as NSData
         }
         
-        let scheduleInts = tracker.schedule.map { $0.rawValue }
-        if let scheduleData = try? JSONEncoder().encode(scheduleInts) {
+        // Преобразуем расписание в строку: "1,2,3" (понедельник, вторник, среда)
+        let scheduleString = tracker.schedule.map { String($0.rawValue) }.joined(separator: ",")
+        if let scheduleData = scheduleString.data(using: .utf8) {
             self.schedule = scheduleData as NSData
+        } else {
+            // Если не удалось создать данные, сохраняем пустое расписание
+            self.schedule = Data() as NSData
         }
     }
 }
@@ -147,7 +162,28 @@ extension TrackerCoreData {
 
 extension TrackerStore: NSFetchedResultsControllerDelegate {
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        pendingChanges.removeAll()
+        insertedIndexesSection = IndexSet()
+        insertedIndexPath = []
+        deletedIndexPath = []
+        deletedIndexesSection = IndexSet()
+        movedIndexPath = []
+    }
+    
+    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        let update = TrackerStoreUpdate(
+            insertedIndexesSection: insertedIndexesSection ?? IndexSet(),
+            deletedIndexesSection: deletedIndexesSection ?? IndexSet(),
+            insertedIndexPath: insertedIndexPath ?? [],
+            deletedIndexPath: deletedIndexPath ?? [],
+            movedIndexPath: movedIndexPath ?? []
+        )
+        delegate?.store(self, didUpdate: update)
+        
+        insertedIndexesSection = nil
+        insertedIndexPath = nil
+        deletedIndexPath = nil
+        deletedIndexesSection = nil
+        movedIndexPath = nil
     }
     
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>,
@@ -158,41 +194,38 @@ extension TrackerStore: NSFetchedResultsControllerDelegate {
         switch type {
         case .insert:
             if let newIndexPath = newIndexPath {
-                pendingChanges.append { [weak self] in
-                    self?.delegate?.delegateCollectionView?.insertItems(at: [newIndexPath])
-                }
+                insertedIndexPath?.append(newIndexPath)
             }
         case .delete:
             if let indexPath = indexPath {
-                pendingChanges.append { [weak self] in
-                    self?.delegate?.delegateCollectionView?.deleteItems(at: [indexPath])
-                }
+                deletedIndexPath?.append(indexPath)
             }
         case .update:
-            if let indexPath = indexPath {
-                pendingChanges.append { [weak self] in
-                    self?.delegate?.delegateCollectionView?.reloadItems(at: [indexPath])
-                }
-            }
+            break
         case .move:
             if let indexPath = indexPath, let newIndexPath = newIndexPath {
-                pendingChanges.append { [weak self] in
-                    self?.delegate?.delegateCollectionView?.moveItem(at: indexPath, to: newIndexPath)
-                }
+                movedIndexPath?.append((indexPath, newIndexPath))
             }
         @unknown default:
             break
         }
     }
     
-    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        guard let collectionView = delegate?.delegateCollectionView else { return }
-        
-        collectionView.performBatchUpdates({
-            pendingChanges.forEach { $0() }
-        }, completion: { [weak self] _ in
-            self?.pendingChanges.removeAll()
-            self?.delegate?.storeDidChange()
-        })
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>,
+                    didChange sectionInfo: NSFetchedResultsSectionInfo,
+                    atSectionIndex sectionIndex: Int,
+                    for type: NSFetchedResultsChangeType) {
+        switch type {
+        case .insert:
+            insertedIndexesSection?.insert(sectionIndex)
+        case .delete:
+            deletedIndexesSection?.insert(sectionIndex)
+        case .update:
+            break
+        case .move:
+            break
+        @unknown default:
+            break
+        }
     }
 }

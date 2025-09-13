@@ -1,9 +1,12 @@
 
 import UIKit
 
+// MARK: - ColorCollectionViewCell
+
 final class ColorCollectionViewCell: UICollectionViewCell {
     
-    // MARK: - Static Properties
+    // MARK: - Properties
+    
     static let reuseIdentifier = "ColorCollectionViewCell"
     
     // MARK: - UI Elements
@@ -33,6 +36,7 @@ final class ColorCollectionViewCell: UICollectionViewCell {
     }()
     
     // MARK: - Initialization
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
@@ -43,7 +47,8 @@ final class ColorCollectionViewCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // MARK: - Setup
+    // MARK: - Setup Methods
+    
     private func setupUI() {
         
         contentView.addSubview(outerFrameView)
@@ -85,7 +90,7 @@ final class ColorCollectionViewCell: UICollectionViewCell {
         whiteBackgroundView.isHidden = !selected
     }
     
-    // MARK: - Reuse
+    // MARK: - Override Methods
     
     override func prepareForReuse() {
         super.prepareForReuse()

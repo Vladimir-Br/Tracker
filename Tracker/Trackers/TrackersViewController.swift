@@ -1,8 +1,10 @@
 import UIKit
 
+// MARK: - TrackersViewController
+
 final class TrackersViewController: UIViewController {
     
-    // MARK: - Static Properties
+    // MARK: - Properties
     
     private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -11,7 +13,6 @@ final class TrackersViewController: UIViewController {
         return formatter
     }()
     
-    // MARK: - Properties
     private let coreDataManager: CoreDataManager
     private let trackerStore: TrackerStore
     private let categoryStore: TrackerCategoryStore
@@ -36,6 +37,8 @@ final class TrackersViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    // MARK: - Computed Properties
+    
     private var visibleCategories: [TrackerCategory] {
         let calendar = Calendar.current
         let weekday = calendar.component(.weekday, from: currentDate)
@@ -45,7 +48,8 @@ final class TrackersViewController: UIViewController {
                 if tracker.schedule.isEmpty {
                     return true
                 }
-                return tracker.schedule.contains { $0.rawValue == weekday }
+                let isVisible = tracker.schedule.contains { $0.rawValue == weekday }
+                return isVisible
             }
             
             guard !trackers.isEmpty else {
@@ -87,7 +91,7 @@ final class TrackersViewController: UIViewController {
             target: self,
             action: #selector(addButtonTapped)
         )
-        button.tintColor = UIColor(named: "Black [day]")
+        button.tintColor = UIColor(resource: .blackDay)
         return button
     }()
     
@@ -95,7 +99,7 @@ final class TrackersViewController: UIViewController {
         let controller = UISearchController(searchResultsController: nil)
         controller.searchBar.placeholder = "Поиск"
         controller.searchBar.searchTextField.font = UIFont.systemFont(ofSize: 17, weight: .regular)
-        controller.searchBar.searchTextField.textColor = UIColor(named: "Gray [day]")
+        controller.searchBar.searchTextField.textColor = UIColor(resource: .grayDay)
         return controller
     }()
     
@@ -111,7 +115,7 @@ final class TrackersViewController: UIViewController {
         let label = UILabel()
         label.text = "Что будем отслеживать?"
         label.font = UIFont.systemFont(ofSize: 12, weight: .medium)
-        label.textColor = UIColor(named: "Black [day]")
+        label.textColor = UIColor(resource: .blackDay)
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -137,7 +141,7 @@ final class TrackersViewController: UIViewController {
         updateUI()
     }
     
-    // MARK: - Setup
+    // MARK: - Setup Methods
     
     private func setupNavigationBar() {
         navigationController?.navigationBar.prefersLargeTitles = true
@@ -245,8 +249,12 @@ final class TrackersViewController: UIViewController {
     
     private func updateUI() {
         updateDateLabel(with: currentDate)
-        updatePlaceholderVisibility()
+        reloadCollectionView()
+    }
+    
+    private func reloadCollectionView() {
         collectionView.reloadData()
+        updatePlaceholderVisibility()
     }
     
     private func updatePlaceholderVisibility() {
@@ -268,12 +276,10 @@ final class TrackersViewController: UIViewController {
     
     private func addTracker(_ tracker: Tracker, toCategory title: String) {
         do {
-            var existingCategory: TrackerCategory?
-            
             let allCategories = try categoryStore.fetchAll()
-            existingCategory = allCategories.first { $0.title == title }
-            
+            let existingCategory = allCategories.first { $0.title == title }
             let categoryId: UUID
+            
             if let category = existingCategory {
                 categoryId = category.id
             } else {
@@ -281,8 +287,8 @@ final class TrackersViewController: UIViewController {
             }
             
             try trackerStore.add(tracker, categoryId: categoryId)
-            
         } catch {
+            // Ошибка добавления трекера
         }
     }
 }
@@ -384,21 +390,74 @@ extension TrackersViewController: NewHabitViewControllerDelegate {
     }
 }
 
-// MARK: - Store Delegates
+// MARK: - TrackerStoreDelegate
 
-extension TrackersViewController: StoreDelegate {
-    
-    var delegateCollectionView: UICollectionView? {
-        return collectionView
-    }
-    
-    func storeDidChange() {
-        DispatchQueue.main.async { [weak self] in
-            self?.loadData()
-            self?.updateUI()
+extension TrackersViewController: TrackerStoreDelegate {
+    func store(_ store: TrackerStore, didUpdate update: TrackerStoreUpdate) {
+        DispatchQueue.main.async {
+            
+            self.collectionView.performBatchUpdates({
+                if !update.insertedIndexesSection.isEmpty {
+                    self.collectionView.insertSections(update.insertedIndexesSection)
+                }
+                if !update.deletedIndexesSection.isEmpty {
+                    self.collectionView.deleteSections(update.deletedIndexesSection)
+                }
+                if !update.insertedIndexPath.isEmpty {
+                    self.collectionView.insertItems(at: update.insertedIndexPath)
+                }
+                if !update.deletedIndexPath.isEmpty {
+                    self.collectionView.deleteItems(at: update.deletedIndexPath)
+                }
+                if !update.movedIndexPath.isEmpty {
+                    for move in update.movedIndexPath {
+                        self.collectionView.moveItem(at: move.0, to: move.1)
+                    }
+                }
+            }, completion: { _ in
+                self.loadData()
+                self.updateUI()
+            })
         }
     }
-    
+}
+
+// MARK: - TrackerCategoryStoreDelegate
+
+extension TrackersViewController: TrackerCategoryStoreDelegate {
+    func trackerCategoryStore(_ store: TrackerCategoryStore, didUpdate update: TrackerCategoryStoreUpdate) {
+        DispatchQueue.main.async {
+            
+            self.collectionView.performBatchUpdates({
+                if !update.insertedIndexPath.isEmpty {
+                    self.collectionView.insertItems(at: update.insertedIndexPath)
+                }
+                if !update.deletedIndexPath.isEmpty {
+                    self.collectionView.deleteItems(at: update.deletedIndexPath)
+                }
+            }, completion: { _ in
+                self.loadData()
+                self.updateUI()
+            })
+        }
+    }
+}
+
+// MARK: - TrackerRecordStoreDelegate
+
+extension TrackersViewController: TrackerRecordStoreDelegate {
+    func trackerRecordStoreDidUpdateRecords(_ store: TrackerRecordStore) {
+        DispatchQueue.main.async {
+            
+            self.loadData()
+            self.collectionView.reloadData()
+        }
+    }
+}
+
+// MARK: - Setup Delegates
+
+extension TrackersViewController {
     private func setupDelegates() {
         trackerStore.delegate = self
         categoryStore.delegate = self

@@ -1,10 +1,27 @@
 
 import CoreData
-import UIKit
+
+// MARK: - TrackerCategoryStoreUpdate
+
+struct TrackerCategoryStoreUpdate {
+    let insertedIndexPath: [IndexPath]
+    let deletedIndexPath: [IndexPath]
+}
+
+// MARK: - TrackerCategoryStoreDelegate
+
+protocol TrackerCategoryStoreDelegate: AnyObject {
+    func trackerCategoryStore(_ store: TrackerCategoryStore, didUpdate update: TrackerCategoryStoreUpdate)
+}
+
+// MARK: - TrackerCategoryStore
 
 final class TrackerCategoryStore: NSObject, Storable {
     let context: NSManagedObjectContext
-    weak var delegate: StoreDelegate?
+    weak var delegate: TrackerCategoryStoreDelegate?
+    
+    private var insertedIndexPath: [IndexPath] = []
+    private var deletedIndexPath: [IndexPath] = []
     
     // MARK: - NSFetchedResultsController
     
@@ -27,6 +44,8 @@ final class TrackerCategoryStore: NSObject, Storable {
         return controller
     }()
     
+    // MARK: - Initialization
+    
     init(context: NSManagedObjectContext) {
         self.context = context
     }
@@ -34,9 +53,7 @@ final class TrackerCategoryStore: NSObject, Storable {
     // MARK: - CRUD Operations
     
     func fetchAll() throws -> [TrackerCategory] {
-        guard let coreDataCategories = fetchedResultsController.fetchedObjects else {
-            return []
-        }
+        guard let coreDataCategories = fetchedResultsController.fetchedObjects else { return [] }
         return coreDataCategories.compactMap { mapCategory($0) }
     }
     
@@ -74,14 +91,10 @@ final class TrackerCategoryStore: NSObject, Storable {
     
     private func mapCategory(_ coreDataCategory: TrackerCategoryCoreData) -> TrackerCategory? {
         guard let categoryId = coreDataCategory.categoryId,
-              let title = coreDataCategory.title else {
-            return nil
-        }
+              let title = coreDataCategory.title else { return nil }
         
         let trackersSet = coreDataCategory.trackers as? Set<TrackerCoreData> ?? Set()
-        let trackers: [Tracker] = trackersSet.compactMap { (coreDataTracker: TrackerCoreData) -> Tracker? in
-            return Tracker(from: coreDataTracker)
-        }
+        let trackers: [Tracker] = trackersSet.compactMap { Tracker(from: $0) }
         
         return TrackerCategory(
             id: categoryId,
@@ -89,34 +102,52 @@ final class TrackerCategoryStore: NSObject, Storable {
             trackers: trackers
         )
     }
-   
+    
     private func findCategory(by id: UUID) throws -> TrackerCategoryCoreData {
         let request = TrackerCategoryCoreData.fetchRequest()
         request.predicate = NSPredicate(format: "%K == %@", #keyPath(TrackerCategoryCoreData.categoryId), id as CVarArg)
         let results = try context.fetch(request)
-        guard let category = results.first else {
-            throw StoreError.categoryNotFound
-        }
-        
+        guard let category = results.first else { throw StoreError.categoryNotFound }
         return category
     }
-    
 }
 
 // MARK: - NSFetchedResultsControllerDelegate
 
 extension TrackerCategoryStore: NSFetchedResultsControllerDelegate {
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        insertedIndexPath = []
+        deletedIndexPath = []
     }
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        delegate?.storeDidChange()
+        let update = TrackerCategoryStoreUpdate(
+            insertedIndexPath: insertedIndexPath,
+            deletedIndexPath: deletedIndexPath
+        )
+        delegate?.trackerCategoryStore(self, didUpdate: update)
     }
     
-    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, 
-                   didChange anObject: Any, 
-                   at indexPath: IndexPath?, 
-                   for type: NSFetchedResultsChangeType, 
-                   newIndexPath: IndexPath?) {
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>,
+                    didChange anObject: Any,
+                    at indexPath: IndexPath?,
+                    for type: NSFetchedResultsChangeType,
+                    newIndexPath: IndexPath?) {
+        switch type {
+        case .insert:
+            if let newIndexPath = newIndexPath {
+                insertedIndexPath.append(newIndexPath)
+            }
+        case .delete:
+            if let indexPath = indexPath {
+                deletedIndexPath.append(indexPath)
+            }
+        case .update:
+            break
+        case .move:
+            break
+        @unknown default:
+            break
+        }
     }
 }

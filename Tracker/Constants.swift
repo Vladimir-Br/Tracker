@@ -1,10 +1,13 @@
 
-import Foundation
 import UIKit
+
+// MARK: - Constants
 
 enum Constants {
     static let defaultCategoryTitle = "Важное"
 }
+
+// MARK: - EmojiConstants
 
 enum EmojiConstants {
     static let emojis: [String] = [
@@ -13,6 +16,8 @@ enum EmojiConstants {
         "🥦", "🏓", "🥇", "🎸", "🏝️", "😪"
     ]
 }
+
+// MARK: - ColorConstants
 
 enum ColorConstants {
     static let colors: [UIColor] = {
@@ -25,6 +30,8 @@ enum ColorConstants {
         return colors
     }()
 }
+
+// MARK: - LayoutConstants
 
 enum LayoutConstants {
     

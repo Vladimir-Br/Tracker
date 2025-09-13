@@ -1,9 +1,12 @@
 
 import UIKit
 
+// MARK: - TabBarController
+
 final class TabBarController: UITabBarController {
     
     // MARK: - Properties
+    
     private let coreDataManager: CoreDataManager
     
     // MARK: - Initialization
@@ -24,6 +27,8 @@ final class TabBarController: UITabBarController {
         setupTabs()
         setupTabBarAppearance()
     }
+    
+    // MARK: - Private Methods
 
     private func setupTabs() {
         let trackersVC = TrackersViewController(coreDataManager: coreDataManager)
@@ -54,10 +59,7 @@ final class TabBarController: UITabBarController {
         appearance.shadowColor = UIColor.systemGray4
         tabBar.standardAppearance = appearance
         tabBar.scrollEdgeAppearance = appearance
-        tabBar.tintColor = UIColor(named: "Blue [day]")
+        tabBar.tintColor = UIColor(resource: .blueDay)
         tabBar.unselectedItemTintColor = .systemGray
     }
 }
-
-
-

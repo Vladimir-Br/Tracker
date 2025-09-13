@@ -1,8 +1,15 @@
 
 import UIKit
 
+// MARK: - HeaderView
+
 final class HeaderView: UICollectionReusableView {
+    
+    // MARK: - Properties
+    
     static let reuseIdentifier = "HeaderView"
+    
+    // MARK: - UI Elements
     
     private let titleLabel: UILabel = {
         let label = UILabel()
@@ -11,6 +18,8 @@ final class HeaderView: UICollectionReusableView {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
+    
+    // MARK: - Initialization
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -27,8 +36,9 @@ final class HeaderView: UICollectionReusableView {
         fatalError("init(coder:) has not been implemented")
     }
     
+    // MARK: - Public Methods
+    
     func setTitle(_ title: String) {
         titleLabel.text = title
     }
 }
-

@@ -1,9 +1,13 @@
 
 import UIKit
 
+// MARK: - NewHabitViewControllerDelegate
+
 protocol NewHabitViewControllerDelegate: AnyObject {
     func didCreateTracker(_ tracker: Tracker, categoryTitle: String)
 }
+
+// MARK: - NewHabitViewController
 
 final class NewHabitViewController: UIViewController {
     
@@ -13,13 +17,17 @@ final class NewHabitViewController: UIViewController {
     private let trackerStore: TrackerStore
     private let categoryStore: TrackerCategoryStore
     
-    // MARK: - Delegate
-    
     weak var delegate: NewHabitViewControllerDelegate?
     
-    // MARK: - Colors
+    private let lightGrayColor = UIColor(resource: .backgroundDay)
     
-    private let lightGrayColor = UIColor(named: "Background [day]")
+    // MARK: - Private Properties
+    
+    private var schedule: [Weekday] = []
+    private var selectedEmoji: String?
+    private var selectedEmojiIndexPath: IndexPath?
+    private var selectedColor: UIColor?
+    private var selectedColorIndexPath: IndexPath?
     
     // MARK: - Initialization
     
@@ -33,14 +41,6 @@ final class NewHabitViewController: UIViewController {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    // MARK: - Private Properties
-    
-    private var schedule: [Tracker.Weekday] = []
-    private var selectedEmoji: String?
-    private var selectedEmojiIndexPath: IndexPath?
-    private var selectedColor: UIColor?
-    private var selectedColorIndexPath: IndexPath?
     
     // MARK: - UI Elements
     
@@ -74,7 +74,7 @@ final class NewHabitViewController: UIViewController {
         ]
         
         label.attributedText = NSAttributedString(string: "Новая привычка", attributes: attributes)
-        label.textColor = UIColor(named: "Black [day]")
+        label.textColor = UIColor(resource: .blackDay)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -82,7 +82,7 @@ final class NewHabitViewController: UIViewController {
     private let nameTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Введите название трекера"
-        textField.backgroundColor = UIColor(named: "Background [day]")
+        textField.backgroundColor = UIColor(resource: .backgroundDay)
         textField.layer.cornerRadius = 16
         textField.font = .systemFont(ofSize: 17)
         textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
@@ -97,7 +97,7 @@ final class NewHabitViewController: UIViewController {
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.translatesAutoresizingMaskIntoConstraints = false
         
-        tableView.backgroundColor = UIColor(named: "Background [day]")
+        tableView.backgroundColor = UIColor(resource: .backgroundDay)
         tableView.layer.cornerRadius = 16
         
         tableView.isScrollEnabled = false
@@ -121,7 +121,7 @@ final class NewHabitViewController: UIViewController {
         let button = UIButton(type: .system)
         button.setTitle("Создать", for: .normal)
         button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = UIColor(named: "Gray [day]")
+        button.backgroundColor = UIColor(resource: .grayDay)
         button.layer.cornerRadius = 16
         button.translatesAutoresizingMaskIntoConstraints = false
         button.isEnabled = false
@@ -162,7 +162,7 @@ final class NewHabitViewController: UIViewController {
         let label = UILabel()
         label.text = "Emoji"
         label.font = UIFont.systemFont(ofSize: 19, weight: .bold)
-        label.textColor = UIColor(named: "Black [day]")
+        label.textColor = UIColor(resource: .blackDay)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -192,7 +192,7 @@ final class NewHabitViewController: UIViewController {
         let label = UILabel()
         label.text = "Цвет"
         label.font = UIFont.systemFont(ofSize: 19, weight: .bold)
-        label.textColor = UIColor(named: "Black [day]")
+        label.textColor = UIColor(resource: .blackDay)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -224,7 +224,7 @@ final class NewHabitViewController: UIViewController {
         colorCollectionView.register(ColorCollectionViewCell.self, forCellWithReuseIdentifier: ColorCollectionViewCell.reuseIdentifier)
     }
     
-    // MARK: - Setup
+    // MARK: - Setup Methods
     
     private func setupUI() {
         
@@ -327,10 +327,8 @@ final class NewHabitViewController: UIViewController {
             schedule: self.schedule
         )
         
-        // Категория остается захардкоженной как "Важное"
         let categoryTitle = "Важное"
         
-        // Уведомляем делегата - он сам сохранит трекер в Core Data
         delegate?.didCreateTracker(newTracker, categoryTitle: categoryTitle)
         dismiss(animated: true)
     }
@@ -345,7 +343,7 @@ final class NewHabitViewController: UIViewController {
         let isEnabled = isNameEntered && isScheduleSelected && isEmojiSelected && isColorSelected
         
         createButton.isEnabled = isEnabled
-        createButton.backgroundColor = isEnabled ? .black : UIColor(named: "Gray [day]")
+        createButton.backgroundColor = isEnabled ? .black : UIColor(resource: .grayDay)
     }
 }
 
@@ -365,7 +363,7 @@ extension NewHabitViewController: UITableViewDataSource {
         
         cell.textLabel?.font = .systemFont(ofSize: 17)
         cell.detailTextLabel?.font = .systemFont(ofSize: 17)
-        cell.detailTextLabel?.textColor = UIColor(named: "Gray [day]")
+        cell.detailTextLabel?.textColor = UIColor(resource: .grayDay)
         
         switch indexPath.row {
         case 0:
@@ -399,7 +397,6 @@ extension NewHabitViewController: UITableViewDelegate {
         
         switch indexPath.row {
         case 0:
-            // Категория - хардкод "Важное" в 14-м спринте
             break
         case 1:
             let scheduleVC = ScheduleViewController()
@@ -428,7 +425,7 @@ extension NewHabitViewController: UITextFieldDelegate {
 // MARK: - ScheduleViewControllerDelegate
 
 extension NewHabitViewController: ScheduleViewControllerDelegate {
-    func didConfirmSchedule(selectedDays: Set<Tracker.Weekday>) {
+    func didConfirmSchedule(selectedDays: Set<Weekday>) {
         self.schedule = Array(selectedDays).sorted(by: { $0.rawValue < $1.rawValue })
         checkCreateButtonState()
         menuTableView.reloadData()
@@ -543,4 +540,3 @@ extension NewHabitViewController: UICollectionViewDataSource {
         return cell
     }
 }
-

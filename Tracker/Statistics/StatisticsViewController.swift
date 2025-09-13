@@ -1,9 +1,12 @@
 
 import UIKit
 
+// MARK: - StatisticsViewController
+
 final class StatisticsViewController: UIViewController {
     
     // MARK: - Properties
+    
     private let coreDataManager: CoreDataManager
     private let trackerStore: TrackerStore
     private let recordStore: TrackerRecordStore
@@ -28,4 +31,3 @@ final class StatisticsViewController: UIViewController {
         view.backgroundColor = .white
     }
 }
-

@@ -1,12 +1,10 @@
-
-
 import UIKit
 
 // MARK: - EmojiCollectionViewCell
 
 final class EmojiCollectionViewCell: UICollectionViewCell {
     
-    // MARK: - Static Properties
+    // MARK: - Properties
     
     static let reuseIdentifier = "EmojiCollectionViewCell"
     
@@ -29,7 +27,7 @@ final class EmojiCollectionViewCell: UICollectionViewCell {
         return view
     }()
     
-    // MARK: - Properties
+    // MARK: - Private Properties
     
     private var emoji: String = ""
     
@@ -45,7 +43,7 @@ final class EmojiCollectionViewCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // MARK: - Setup
+    // MARK: - Setup Methods
     
     private func setupUI() {
         contentView.addSubview(selectionBackgroundView)
@@ -67,7 +65,6 @@ final class EmojiCollectionViewCell: UICollectionViewCell {
         ])
     }
     
-    
     // MARK: - Public Methods
     
     func configure(with emoji: String) {
@@ -79,7 +76,7 @@ final class EmojiCollectionViewCell: UICollectionViewCell {
         selectionBackgroundView.isHidden = !selected
     }
     
-    // MARK: - Reuse
+    // MARK: - Override Methods
     
     override func prepareForReuse() {
         super.prepareForReuse()
