@@ -50,7 +50,8 @@ final class TrackerRecordStore: NSObject {
     func add(_ record: TrackerRecord) throws {
         let tracker = try findTracker(by: record.trackerId)
         let coreDataRecord = TrackerRecordCoreData(context: context)
-        coreDataRecord.date = record.date
+        let calendar = Calendar.current
+        coreDataRecord.date = calendar.startOfDay(for: record.date)
         coreDataRecord.tracker = tracker
         try save()
     }
@@ -98,12 +99,14 @@ final class TrackerRecordStore: NSObject {
     
     private func findRecord(trackerId: UUID, date: Date) throws -> TrackerRecordCoreData {
         let request = TrackerRecordCoreData.fetchRequest()
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: date)
         request.predicate = NSPredicate(format: "%K.%K == %@ AND %K == %@",
                                        #keyPath(TrackerRecordCoreData.tracker), 
                                        #keyPath(TrackerCoreData.trackerId), 
                                        trackerId as CVarArg,
                                        #keyPath(TrackerRecordCoreData.date), 
-                                       date as CVarArg)
+                                       startOfDay as CVarArg)
        
         let results = try context.fetch(request)
         guard let record = results.first else {

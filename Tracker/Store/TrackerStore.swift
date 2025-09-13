@@ -2,6 +2,10 @@
 import CoreData
 import UIKit
 
+protocol StoreDelegate: AnyObject {
+    func storeDidChange()
+}
+
 final class TrackerStore: NSObject {
     private let context: NSManagedObjectContext
     weak var delegate: StoreDelegate?

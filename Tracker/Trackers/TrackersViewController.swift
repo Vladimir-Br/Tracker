@@ -308,7 +308,9 @@ extension TrackersViewController: UICollectionViewDataSource {
         let completedDays = completedTrackers.filter { $0.trackerId == tracker.id }.count
         
         cell.delegate = self
-        cell.configure(with: tracker, isCompleted: isCompleted, count: completedDays, at: currentDate)
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: currentDate)
+        cell.configure(with: tracker, isCompleted: isCompleted, count: completedDays, at: startOfDay)
         return cell
     }
     
@@ -356,11 +358,13 @@ extension TrackersViewController: TrackerCellDelegate {
         guard let indexPath = collectionView.indexPath(for: cell) else { return }
         let tracker = visibleCategories[indexPath.section].trackers[indexPath.item]
         
-        let record = TrackerRecord(trackerId: tracker.id, date: currentDate)
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: currentDate)
+        let record = TrackerRecord(trackerId: tracker.id, date: startOfDay)
         
         do {
             if completedTrackers.contains(record) {
-                try recordStore.delete(trackerId: tracker.id, date: currentDate)
+                try recordStore.delete(trackerId: tracker.id, date: startOfDay)
                 completedTrackers.remove(record)
             } else {
                 try recordStore.add(record)
