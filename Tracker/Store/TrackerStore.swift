@@ -1,0 +1,198 @@
+
+import CoreData
+import UIKit
+
+protocol Storable: AnyObject {
+    var context: NSManagedObjectContext { get }
+    func saveContext() throws
+}
+
+extension Storable {
+    func saveContext() throws {
+        guard context.hasChanges else { return }
+        
+        do {
+            try context.save()
+        } catch {
+            context.rollback()
+            throw error
+        }
+    }
+}
+
+protocol StoreDelegate: AnyObject {
+    var delegateCollectionView: UICollectionView? { get }
+    func storeDidChange()
+}
+
+final class TrackerStore: NSObject, Storable {
+    let context: NSManagedObjectContext
+    weak var delegate: StoreDelegate?
+    private var pendingChanges: [() -> Void] = []
+    
+    // MARK: - NSFetchedResultsController
+    
+    private lazy var fetchedResultsController: NSFetchedResultsController<TrackerCoreData> = {
+        let fetchRequest = TrackerCoreData.fetchRequest()
+        fetchRequest.sortDescriptors = [
+            NSSortDescriptor(key: "trackerId", ascending: true)
+        ]
+        
+        let controller = NSFetchedResultsController(
+            fetchRequest: fetchRequest,
+            managedObjectContext: context,
+            sectionNameKeyPath: nil,
+            cacheName: nil
+        )
+        
+        controller.delegate = self
+        try? controller.performFetch()
+        return controller
+    }()
+    
+    // MARK: - Initialization
+    
+    init(context: NSManagedObjectContext) {
+        self.context = context
+    }
+    
+    // MARK: - CRUD Operations
+    
+    func fetchAll() throws -> [Tracker] {
+        guard let coreDataTrackers = fetchedResultsController.fetchedObjects else {
+            return []
+        }
+        return coreDataTrackers.compactMap { mapTracker($0) }
+    }
+    
+    func numberOfTrackers() -> Int {
+        return fetchedResultsController.fetchedObjects?.count ?? 0
+    }
+    
+    func tracker(at indexPath: IndexPath) -> Tracker? {
+        let coreDataTracker = fetchedResultsController.object(at: indexPath)
+        return mapTracker(coreDataTracker)
+    }
+    
+    func add(_ tracker: Tracker, categoryId: UUID) throws {
+        let category = try findCategory(by: categoryId)
+        let coreDataTracker = TrackerCoreData(context: context)
+        coreDataTracker.configure(from: tracker)
+        coreDataTracker.category = category
+        
+        try saveContext()
+    }
+    
+    func update(_ tracker: Tracker) throws {
+        let coreDataTracker = try findTracker(by: tracker.id)
+        coreDataTracker.configure(from: tracker)
+        try saveContext()
+    }
+    
+    func delete(trackerId: UUID) throws {
+        let tracker = try findTracker(by: trackerId)
+        context.delete(tracker)
+        try saveContext()
+    }
+    
+    // MARK: - Private Methods
+    
+    private func mapTracker(_ coreDataTracker: TrackerCoreData) -> Tracker? {
+        return Tracker(from: coreDataTracker)
+    }
+    
+    private func findTracker(by id: UUID) throws -> TrackerCoreData {
+        let request = TrackerCoreData.fetchRequest()
+        request.predicate = NSPredicate(format: "%K == %@", #keyPath(TrackerCoreData.trackerId), id as CVarArg)
+        let results = try context.fetch(request)
+        guard let tracker = results.first else {
+            throw StoreError.trackerNotFound
+        }
+        
+        return tracker
+    }
+    
+    private func findCategory(by id: UUID) throws -> TrackerCategoryCoreData {
+        let request = TrackerCategoryCoreData.fetchRequest()
+        request.predicate = NSPredicate(format: "%K == %@", #keyPath(TrackerCategoryCoreData.categoryId), id as CVarArg)
+        let results = try context.fetch(request)
+        guard let category = results.first else {
+            throw StoreError.categoryNotFound
+        }
+        
+        return category
+    }
+    
+}
+
+// MARK: - TrackerCoreData Extensions
+
+extension TrackerCoreData {
+    func configure(from tracker: Tracker) {
+        self.trackerId = tracker.id
+        self.name = tracker.name
+        self.emoji = tracker.emoji
+        if let colorData = try? NSKeyedArchiver.archivedData(withRootObject: tracker.color, requiringSecureCoding: true) {
+            self.color = colorData as NSData
+        }
+        
+        let scheduleInts = tracker.schedule.map { $0.rawValue }
+        if let scheduleData = try? JSONEncoder().encode(scheduleInts) {
+            self.schedule = scheduleData as NSData
+        }
+    }
+}
+
+// MARK: - NSFetchedResultsControllerDelegate
+
+extension TrackerStore: NSFetchedResultsControllerDelegate {
+    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        pendingChanges.removeAll()
+    }
+    
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>,
+                    didChange anObject: Any,
+                    at indexPath: IndexPath?,
+                    for type: NSFetchedResultsChangeType,
+                    newIndexPath: IndexPath?) {
+        switch type {
+        case .insert:
+            if let newIndexPath = newIndexPath {
+                pendingChanges.append { [weak self] in
+                    self?.delegate?.delegateCollectionView?.insertItems(at: [newIndexPath])
+                }
+            }
+        case .delete:
+            if let indexPath = indexPath {
+                pendingChanges.append { [weak self] in
+                    self?.delegate?.delegateCollectionView?.deleteItems(at: [indexPath])
+                }
+            }
+        case .update:
+            if let indexPath = indexPath {
+                pendingChanges.append { [weak self] in
+                    self?.delegate?.delegateCollectionView?.reloadItems(at: [indexPath])
+                }
+            }
+        case .move:
+            if let indexPath = indexPath, let newIndexPath = newIndexPath {
+                pendingChanges.append { [weak self] in
+                    self?.delegate?.delegateCollectionView?.moveItem(at: indexPath, to: newIndexPath)
+                }
+            }
+        @unknown default:
+            break
+        }
+    }
+    
+    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        guard let collectionView = delegate?.delegateCollectionView else { return }
+        
+        collectionView.performBatchUpdates({
+            pendingChanges.forEach { $0() }
+        }, completion: { [weak self] _ in
+            self?.pendingChanges.removeAll()
+            self?.delegate?.storeDidChange()
+        })
+    }
+}

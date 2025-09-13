@@ -18,7 +18,6 @@ final class TrackerCell: UICollectionViewCell {
         return view
     }()
     
-    // Белая подложка под emoji
     private let emojiBackgroundView: UIView = {
         let view = UIView()
         view.backgroundColor = UIColor.white.withAlphaComponent(0.3)

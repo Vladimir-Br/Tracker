@@ -1,12 +1,17 @@
 
 import UIKit
+import CoreData
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-
+    // MARK: - Properties
+    
+    var coreDataManager: CoreDataManager!
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        
+        coreDataManager = CoreDataManager(containerName: "Tracker")
         
         return true
     }
@@ -21,7 +26,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>) {
      
     }
-
+    
+    // MARK: - Core Data Saving Support
+    
+    func applicationWillTerminate(_ application: UIApplication) {
+        coreDataManager.saveContext()
+    }
 
 }
 
