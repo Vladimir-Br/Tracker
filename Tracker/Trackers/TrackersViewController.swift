@@ -390,53 +390,15 @@ extension TrackersViewController: NewHabitViewControllerDelegate {
     }
 }
 
-// MARK: - TrackerStoreDelegate
+// MARK: - Store Delegates
 
-extension TrackersViewController: TrackerStoreDelegate {
-    func store(_ store: TrackerStore, didUpdate update: TrackerStoreUpdate) {
+extension TrackersViewController: TrackerStoreDelegate, TrackerCategoryStoreDelegate {
+    func storeDidChange() {
         DispatchQueue.main.async {
-            
-            self.collectionView.performBatchUpdates({
-                if !update.insertedIndexesSection.isEmpty {
-                    self.collectionView.insertSections(update.insertedIndexesSection)
-                }
-                if !update.deletedIndexesSection.isEmpty {
-                    self.collectionView.deleteSections(update.deletedIndexesSection)
-                }
-                if !update.insertedIndexPath.isEmpty {
-                    self.collectionView.insertItems(at: update.insertedIndexPath)
-                }
-                if !update.deletedIndexPath.isEmpty {
-                    self.collectionView.deleteItems(at: update.deletedIndexPath)
-                }
-                if !update.movedIndexPath.isEmpty {
-                    for move in update.movedIndexPath {
-                        self.collectionView.moveItem(at: move.0, to: move.1)
-                    }
-                }
+            self.loadData()
+            UIView.transition(with: self.collectionView, duration: 0.3, options: .transitionCrossDissolve, animations: {
+                self.collectionView.reloadData()
             }, completion: { _ in
-                self.loadData()
-                self.updateUI()
-            })
-        }
-    }
-}
-
-// MARK: - TrackerCategoryStoreDelegate
-
-extension TrackersViewController: TrackerCategoryStoreDelegate {
-    func trackerCategoryStore(_ store: TrackerCategoryStore, didUpdate update: TrackerCategoryStoreUpdate) {
-        DispatchQueue.main.async {
-            
-            self.collectionView.performBatchUpdates({
-                if !update.insertedIndexPath.isEmpty {
-                    self.collectionView.insertItems(at: update.insertedIndexPath)
-                }
-                if !update.deletedIndexPath.isEmpty {
-                    self.collectionView.deleteItems(at: update.deletedIndexPath)
-                }
-            }, completion: { _ in
-                self.loadData()
                 self.updateUI()
             })
         }

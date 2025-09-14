@@ -1,20 +1,10 @@
 
 import CoreData
 
-// MARK: - TrackerStoreUpdate
-
-struct TrackerStoreUpdate {
-    let insertedIndexesSection: IndexSet
-    let deletedIndexesSection: IndexSet
-    let insertedIndexPath: [IndexPath]
-    let deletedIndexPath: [IndexPath]
-    let movedIndexPath: [(IndexPath, IndexPath)]
-}
-
 // MARK: - TrackerStoreDelegate
 
 protocol TrackerStoreDelegate: AnyObject {
-    func store(_ store: TrackerStore, didUpdate update: TrackerStoreUpdate)
+    func storeDidChange()
 }
 
 // MARK: - TrackerStore
@@ -22,12 +12,6 @@ protocol TrackerStoreDelegate: AnyObject {
 final class TrackerStore: NSObject, Storable {
     let context: NSManagedObjectContext
     weak var delegate: TrackerStoreDelegate?
-    
-    private var insertedIndexesSection: IndexSet?
-    private var insertedIndexPath: [IndexPath]?
-    private var deletedIndexPath: [IndexPath]?
-    private var deletedIndexesSection: IndexSet?
-    private var movedIndexPath: [(IndexPath, IndexPath)]?
     
     // MARK: - NSFetchedResultsController
     
@@ -59,10 +43,7 @@ final class TrackerStore: NSObject, Storable {
     
     func fetchAll() throws -> [Tracker] {
         guard let coreDataTrackers = fetchedResultsController.fetchedObjects else { return [] }
-        
-        // Мигрируем трекеры с nil расписанием
         try migrateTrackersWithNilSchedule(coreDataTrackers)
-        
         return coreDataTrackers.compactMap { mapTracker($0) }
     }
     
@@ -101,7 +82,6 @@ final class TrackerStore: NSObject, Storable {
         var needsSave = false
         for tracker in coreDataTrackers {
             if tracker.schedule == nil {
-                // Устанавливаем пустое расписание только для трекеров без расписания
                 let emptyScheduleData = try JSONEncoder().encode([Int]())
                 tracker.schedule = emptyScheduleData as NSData
                 needsSave = true
@@ -140,19 +120,14 @@ extension TrackerCoreData {
         self.trackerId = tracker.id
         self.name = tracker.name
         self.emoji = tracker.emoji
-        
-        // Преобразуем цвет в HEX-строку (например, "#FF0000")
         let colorHexString = tracker.color.hexString
         if let colorData = colorHexString.data(using: .utf8) {
             self.color = colorData as NSData
         }
-        
-        // Преобразуем расписание в строку: "1,2,3" (понедельник, вторник, среда)
         let scheduleString = tracker.schedule.map { String($0.rawValue) }.joined(separator: ",")
         if let scheduleData = scheduleString.data(using: .utf8) {
             self.schedule = scheduleData as NSData
         } else {
-            // Если не удалось создать данные, сохраняем пустое расписание
             self.schedule = Data() as NSData
         }
     }
@@ -162,28 +137,11 @@ extension TrackerCoreData {
 
 extension TrackerStore: NSFetchedResultsControllerDelegate {
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        insertedIndexesSection = IndexSet()
-        insertedIndexPath = []
-        deletedIndexPath = []
-        deletedIndexesSection = IndexSet()
-        movedIndexPath = []
+        
     }
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        let update = TrackerStoreUpdate(
-            insertedIndexesSection: insertedIndexesSection ?? IndexSet(),
-            deletedIndexesSection: deletedIndexesSection ?? IndexSet(),
-            insertedIndexPath: insertedIndexPath ?? [],
-            deletedIndexPath: deletedIndexPath ?? [],
-            movedIndexPath: movedIndexPath ?? []
-        )
-        delegate?.store(self, didUpdate: update)
-        
-        insertedIndexesSection = nil
-        insertedIndexPath = nil
-        deletedIndexPath = nil
-        deletedIndexesSection = nil
-        movedIndexPath = nil
+        delegate?.storeDidChange()
     }
     
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>,
@@ -191,41 +149,13 @@ extension TrackerStore: NSFetchedResultsControllerDelegate {
                     at indexPath: IndexPath?,
                     for type: NSFetchedResultsChangeType,
                     newIndexPath: IndexPath?) {
-        switch type {
-        case .insert:
-            if let newIndexPath = newIndexPath {
-                insertedIndexPath?.append(newIndexPath)
-            }
-        case .delete:
-            if let indexPath = indexPath {
-                deletedIndexPath?.append(indexPath)
-            }
-        case .update:
-            break
-        case .move:
-            if let indexPath = indexPath, let newIndexPath = newIndexPath {
-                movedIndexPath?.append((indexPath, newIndexPath))
-            }
-        @unknown default:
-            break
-        }
+        
     }
     
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>,
                     didChange sectionInfo: NSFetchedResultsSectionInfo,
                     atSectionIndex sectionIndex: Int,
                     for type: NSFetchedResultsChangeType) {
-        switch type {
-        case .insert:
-            insertedIndexesSection?.insert(sectionIndex)
-        case .delete:
-            deletedIndexesSection?.insert(sectionIndex)
-        case .update:
-            break
-        case .move:
-            break
-        @unknown default:
-            break
-        }
+        
     }
 }

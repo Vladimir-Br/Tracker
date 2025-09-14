@@ -1,17 +1,10 @@
 
 import CoreData
 
-// MARK: - TrackerCategoryStoreUpdate
-
-struct TrackerCategoryStoreUpdate {
-    let insertedIndexPath: [IndexPath]
-    let deletedIndexPath: [IndexPath]
-}
-
 // MARK: - TrackerCategoryStoreDelegate
 
 protocol TrackerCategoryStoreDelegate: AnyObject {
-    func trackerCategoryStore(_ store: TrackerCategoryStore, didUpdate update: TrackerCategoryStoreUpdate)
+    func storeDidChange()
 }
 
 // MARK: - TrackerCategoryStore
@@ -19,9 +12,6 @@ protocol TrackerCategoryStoreDelegate: AnyObject {
 final class TrackerCategoryStore: NSObject, Storable {
     let context: NSManagedObjectContext
     weak var delegate: TrackerCategoryStoreDelegate?
-    
-    private var insertedIndexPath: [IndexPath] = []
-    private var deletedIndexPath: [IndexPath] = []
     
     // MARK: - NSFetchedResultsController
     
@@ -116,16 +106,10 @@ final class TrackerCategoryStore: NSObject, Storable {
 
 extension TrackerCategoryStore: NSFetchedResultsControllerDelegate {
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        insertedIndexPath = []
-        deletedIndexPath = []
     }
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        let update = TrackerCategoryStoreUpdate(
-            insertedIndexPath: insertedIndexPath,
-            deletedIndexPath: deletedIndexPath
-        )
-        delegate?.trackerCategoryStore(self, didUpdate: update)
+        delegate?.storeDidChange()
     }
     
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>,
@@ -133,21 +117,5 @@ extension TrackerCategoryStore: NSFetchedResultsControllerDelegate {
                     at indexPath: IndexPath?,
                     for type: NSFetchedResultsChangeType,
                     newIndexPath: IndexPath?) {
-        switch type {
-        case .insert:
-            if let newIndexPath = newIndexPath {
-                insertedIndexPath.append(newIndexPath)
-            }
-        case .delete:
-            if let indexPath = indexPath {
-                deletedIndexPath.append(indexPath)
-            }
-        case .update:
-            break
-        case .move:
-            break
-        @unknown default:
-            break
-        }
     }
 }
