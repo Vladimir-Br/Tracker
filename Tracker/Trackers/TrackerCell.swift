@@ -1,11 +1,18 @@
 
 import UIKit
 
+// MARK: - TrackerCellDelegate
+
 protocol TrackerCellDelegate: AnyObject {
     func didTapCompleteButton(for cell: TrackerCell)
 }
 
+// MARK: - TrackerCell
+
 final class TrackerCell: UICollectionViewCell {
+    
+    // MARK: - Properties
+    
     static let reuseIdentifier = "TrackerCell"
     weak var delegate: TrackerCellDelegate?
     
@@ -18,7 +25,6 @@ final class TrackerCell: UICollectionViewCell {
         return view
     }()
     
-    // Белая подложка под emoji
     private let emojiBackgroundView: UIView = {
         let view = UIView()
         view.backgroundColor = UIColor.white.withAlphaComponent(0.3)
@@ -74,7 +80,7 @@ final class TrackerCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // MARK: - Setup
+    // MARK: - Setup Methods
     
     private func setupUI() {
         contentView.addSubview(cardView)
@@ -116,7 +122,7 @@ final class TrackerCell: UICollectionViewCell {
         ])
     }
     
-    // MARK: - Configuration
+    // MARK: - Public Methods
     
     func configure(with tracker: Tracker, isCompleted: Bool, count: Int, at date: Date) {
         cardView.backgroundColor = tracker.color
@@ -143,7 +149,7 @@ final class TrackerCell: UICollectionViewCell {
         delegate?.didTapCompleteButton(for: self)
     }
     
-    // MARK: - Helpers
+    // MARK: - Private Methods
     
     private func formatDaysString(for count: Int) -> String {
         let lastDigit = count % 10

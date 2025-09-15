@@ -1,19 +1,23 @@
 
 import UIKit
 
+// MARK: - ScheduleViewControllerDelegate
+
 protocol ScheduleViewControllerDelegate: AnyObject {
-    func didConfirmSchedule(selectedDays: Set<Tracker.Weekday>)
+    func didConfirmSchedule(selectedDays: Set<Weekday>)
 }
+
+// MARK: - ScheduleViewController
 
 final class ScheduleViewController: UIViewController {
 
-    // MARK: - Delegate
+    // MARK: - Properties
+    
     weak var delegate: ScheduleViewControllerDelegate?
     
-    // MARK: - Properties
-    var currentlySelectedDays: Set<Tracker.Weekday> = []
+    var currentlySelectedDays: Set<Weekday> = []
     
-    private let weekDays: [Tracker.Weekday] = [
+    private let weekDays: [Weekday] = [
         .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday
     ]
     
@@ -32,7 +36,7 @@ final class ScheduleViewController: UIViewController {
     private let scheduleTableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.backgroundColor = UIColor(named: "Background [day]")
+        tableView.backgroundColor = UIColor(resource: .backgroundDay)
         tableView.layer.cornerRadius = 16
         tableView.isScrollEnabled = false
         tableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
@@ -43,7 +47,7 @@ final class ScheduleViewController: UIViewController {
         let button = UIButton(type: .system)
         button.setTitle("Готово", for: .normal)
         button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = UIColor(named: "Gray [day]")
+        button.backgroundColor = UIColor(resource: .grayDay)
         button.layer.cornerRadius = 16
         button.translatesAutoresizingMaskIntoConstraints = false
         button.isEnabled = false
@@ -66,7 +70,7 @@ final class ScheduleViewController: UIViewController {
         checkDoneButtonState()
     }
     
-    // MARK: - Setup
+    // MARK: - Setup Methods
     
     private func setupUI() {
         view.addSubview(titleLabel)
@@ -116,11 +120,12 @@ final class ScheduleViewController: UIViewController {
     private func checkDoneButtonState() {
         let isEnabled = !currentlySelectedDays.isEmpty
         doneButton.isEnabled = isEnabled
-        doneButton.backgroundColor = isEnabled ? .black : UIColor(named: "Gray [day]")
+        doneButton.backgroundColor = isEnabled ? .black : UIColor(resource: .grayDay)
     }
 }
 
 // MARK: - UITableViewDataSource
+
 extension ScheduleViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return weekDays.count
@@ -136,7 +141,7 @@ extension ScheduleViewController: UITableViewDataSource {
         
         let switchView = UISwitch(frame: .zero)
         switchView.setOn(currentlySelectedDays.contains(day), animated: false)
-        switchView.onTintColor = UIColor(named: "Blue [day]") 
+        switchView.onTintColor = UIColor(resource: .blueDay) 
         switchView.tag = indexPath.row
         switchView.addTarget(self, action: #selector(switchToggled(_:)), for: .valueChanged)
         
