@@ -1,3 +1,4 @@
+
 import UIKit
 
 // MARK: - TrackersViewController
@@ -153,7 +154,6 @@ final class TrackersViewController: UIViewController {
         dateContainerView.addSubview(dateLabel)
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: dateContainerView)
-        
         navigationItem.searchController = searchController
         
         NSLayoutConstraint.activate([

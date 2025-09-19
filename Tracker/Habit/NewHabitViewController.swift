@@ -402,7 +402,6 @@ extension NewHabitViewController: UITableViewDelegate {
             let categoryListVC = CategoryListViewController()
             let viewModel = CategoryListViewModel(categoryStore: categoryStore)
             
-            // Передаем текущую выбранную категорию
             if let selectedCategory = selectedCategory {
                 viewModel.selectCategory(selectedCategory)
             }

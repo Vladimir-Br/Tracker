@@ -1,3 +1,4 @@
+
 import UIKit
 
 // MARK: - NewCategoryViewControllerDelegate
@@ -130,29 +131,25 @@ final class NewCategoryViewController: UIViewController {
     
     private func setupLayout() {
         NSLayoutConstraint.activate([
-            // Title Label (кастомный заголовок как на экране Категория)
+            
             titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 27),
             titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             titleLabel.heightAnchor.constraint(equalToConstant: 22),
             
-            // Text Field Container
             textFieldContainer.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 24),
             textFieldContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             textFieldContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             textFieldContainer.heightAnchor.constraint(equalToConstant: 75),
             
-            // Name Text Field
             nameTextField.topAnchor.constraint(equalTo: textFieldContainer.topAnchor),
             nameTextField.leadingAnchor.constraint(equalTo: textFieldContainer.leadingAnchor),
             nameTextField.trailingAnchor.constraint(equalTo: textFieldContainer.trailingAnchor),
             nameTextField.bottomAnchor.constraint(equalTo: textFieldContainer.bottomAnchor),
             
-            // Error Label
             errorLabel.topAnchor.constraint(equalTo: textFieldContainer.bottomAnchor, constant: 8),
             errorLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             errorLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             
-            // Done Button
             doneButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             doneButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             doneButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
@@ -171,10 +168,7 @@ final class NewCategoryViewController: UIViewController {
     private func updateDoneButtonState() {
         let trimmedText = nameTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let isTextValid = !trimmedText.isEmpty && trimmedText.count <= 38
-        
         var shouldEnable = isTextValid
-        
-        // В режиме редактирования проверяем, изменился ли текст
         if case .edit(let category, _) = mode {
             shouldEnable = isTextValid && trimmedText != category.title
         }
@@ -182,7 +176,6 @@ final class NewCategoryViewController: UIViewController {
         doneButton.isEnabled = shouldEnable
         doneButton.backgroundColor = shouldEnable ? UIColor(resource: .blackDay) : UIColor(resource: .grayDay)
         
-        // Показываем ошибку если текст слишком длинный
         let text = nameTextField.text ?? ""
         if text.count > 38 {
             showError("Ограничение 38 символов")
@@ -241,7 +234,6 @@ extension NewCategoryViewController: UITextFieldDelegate {
         guard let stringRange = Range(range, in: currentText) else { return false }
         let updatedText = currentText.replacingCharacters(in: stringRange, with: string)
         
-        // Разрешаем ввод до 38 символов + 1 для показа ошибки
         return updatedText.count <= 39
     }
 }

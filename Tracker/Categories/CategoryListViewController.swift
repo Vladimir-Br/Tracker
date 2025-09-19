@@ -1,3 +1,4 @@
+
 import UIKit
 
 // MARK: - CategorySelectionDelegate
@@ -117,27 +118,23 @@ final class CategoryListViewController: UIViewController {
     
     private func setupLayout() {
         NSLayoutConstraint.activate([
-            // Title Label (согласно Figma: top: 78px от верха экрана)
+            
             titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 27),
             titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             titleLabel.widthAnchor.constraint(equalToConstant: 84),
             titleLabel.heightAnchor.constraint(equalToConstant: 22),
             
-            // Placeholder Stack View
             placeholderStackView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             placeholderStackView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
             
-            // Placeholder Image View
             placeholderImageView.widthAnchor.constraint(equalToConstant: 80),
             placeholderImageView.heightAnchor.constraint(equalToConstant: 80),
             
-            // Table View
             tableView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 30),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             tableView.bottomAnchor.constraint(equalTo: addCategoryButton.topAnchor, constant: -16),
             
-            // Add Category Button
             addCategoryButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             addCategoryButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             addCategoryButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
@@ -234,10 +231,8 @@ extension CategoryListViewController: UITableViewDelegate {
         guard let viewModel = viewModel,
               let category = viewModel.category(at: indexPath.row) else { return }
         
-        // Выбираем категорию
         viewModel.selectCategory(category)
         
-        // Уведомляем делегата и возвращаемся на предыдущий экран
         delegate?.didSelectCategory(category)
         navigationController?.popViewController(animated: true)
     }
@@ -249,25 +244,20 @@ extension CategoryListViewController: UITableViewDelegate {
         let numberOfRows = viewModel.numberOfCategories
         var corners: CACornerMask = []
         
-        // Скругление для первой ячейки
         if indexPath.row == 0 {
             corners.formUnion([.layerMinXMinYCorner, .layerMaxXMinYCorner])
         }
         
-        // Скругление для последней ячейки
         if indexPath.row == numberOfRows - 1 {
             corners.formUnion([.layerMinXMaxYCorner, .layerMaxXMaxYCorner])
             categoryCell.hideSeparator()
         } else {
             categoryCell.showSeparator()
         }
-        
-        // Применяем скругление
+       
         cell.layer.maskedCorners = corners
         cell.layer.cornerRadius = !corners.isEmpty ? 16 : 0
         cell.layer.masksToBounds = !corners.isEmpty
-        
-        // Устанавливаем фон для ячейки
         cell.backgroundColor = UIColor(resource: .backgroundDay)
     }
     
@@ -293,9 +283,7 @@ extension CategoryListViewController: UITableViewDelegate {
         guard let viewModel = viewModel,
               let category = viewModel.category(at: indexPath.row) else { return }
         
-        // Выбираем категорию для показа галочки
         viewModel.selectCategory(category)
-        
         let editCategoryVC = NewCategoryViewController()
         editCategoryVC.configure(for: .edit(category: category, index: indexPath.row))
         editCategoryVC.delegate = self
@@ -308,7 +296,6 @@ extension CategoryListViewController: UITableViewDelegate {
         guard let viewModel = viewModel,
               let category = viewModel.category(at: indexPath.row) else { return }
         
-        // Выбираем категорию для показа галочки
         viewModel.selectCategory(category)
         
         let alert = UIAlertController(

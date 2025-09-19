@@ -123,7 +123,6 @@ final class CategoryListViewModel {
             return
         }
         
-        // Проверяем, есть ли трекеры в этой категории
         if !category.trackers.isEmpty {
             onErrorStateChange?("Нельзя удалить категорию, в которой есть трекеры")
             return
@@ -131,8 +130,6 @@ final class CategoryListViewModel {
         
         do {
             try categoryStore.delete(id: category.id)
-            
-            // Сбрасываем выбранную категорию, если она была удалена
             if selectedCategory?.id == category.id {
                 selectedCategory = nil
             }
