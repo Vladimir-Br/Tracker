@@ -97,9 +97,13 @@ final class OnboardingViewController: UIPageViewController {
     private func createPage(description: String, imagePage: String) -> UIViewController {
         let viewController = UIViewController()
         
+        // Устанавливаем белый фон для страницы
+        viewController.view.backgroundColor = .white
+        
         let imageView = UIImageView()
         imageView.image = UIImage(named: imagePage)
         imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
         imageView.translatesAutoresizingMaskIntoConstraints = false
         
         let titleLabel = UILabel()

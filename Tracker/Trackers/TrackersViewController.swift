@@ -386,7 +386,7 @@ extension TrackersViewController: TrackerCellDelegate {
 
 extension TrackersViewController: NewHabitViewControllerDelegate {
     func didCreateTracker(_ tracker: Tracker, categoryTitle: String) {
-        addTracker(tracker, toCategory: "Важное")
+        addTracker(tracker, toCategory: categoryTitle)
     }
 }
 
