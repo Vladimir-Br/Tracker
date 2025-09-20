@@ -1,10 +1,14 @@
 
 import UIKit
 
+// MARK: - MVVM Binding
+
+typealias Binding<T> = (T) -> Void
+
 // MARK: - Constants
 
 enum Constants {
-    static let defaultCategoryTitle = "Важное"
+    // Константы приложения
 }
 
 // MARK: - EmojiConstants
