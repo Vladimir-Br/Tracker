@@ -13,7 +13,7 @@ final class CategoryListViewController: UIViewController {
     
     // MARK: - Properties
     
-    private var viewModel: CategoryListViewModel?
+    private let viewModel: CategoryListViewModel
     weak var delegate: CategorySelectionDelegate?
     
     // MARK: - UI Elements
@@ -89,14 +89,19 @@ final class CategoryListViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        viewModel?.loadCategories()
+        viewModel.loadCategories()
     }
     
     // MARK: - Initialization
     
-    func initialize(viewModel: CategoryListViewModel) {
+    init(viewModel: CategoryListViewModel) {
         self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
         bind()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     // MARK: - Setup Methods
@@ -121,7 +126,6 @@ final class CategoryListViewController: UIViewController {
             
             titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 27),
             titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            titleLabel.widthAnchor.constraint(equalToConstant: 84),
             titleLabel.heightAnchor.constraint(equalToConstant: 22),
             
             placeholderStackView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -145,11 +149,9 @@ final class CategoryListViewController: UIViewController {
     // MARK: - Binding (MVVM Pattern)
     
     private func bind() {
-        guard let viewModel = viewModel else { return }
-        
         viewModel.onCategoriesDidChange = { [weak self] categories in
             DispatchQueue.main.async {
-                self?.tableView.reloadData()
+                self?.reloadTableView()
             }
         }
         
@@ -169,12 +171,16 @@ final class CategoryListViewController: UIViewController {
         
         viewModel.onSelectedCategoryDidChange = { [weak self] selectedCategory in
             DispatchQueue.main.async {
-                self?.tableView.reloadData()
+                self?.reloadTableView()
             }
         }
     }
     
     // MARK: - Private Methods
+    
+    private func reloadTableView() {
+        tableView.reloadData()
+    }
     
     private func updatePlaceholderVisibility(isEmpty: Bool) {
         placeholderStackView.isHidden = !isEmpty
@@ -201,12 +207,11 @@ final class CategoryListViewController: UIViewController {
 
 extension CategoryListViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewModel?.numberOfCategories ?? 0
+        return viewModel.numberOfCategories
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: CategoryTableViewCell.reuseIdentifier, for: indexPath) as? CategoryTableViewCell,
-              let viewModel = viewModel,
               let category = viewModel.category(at: indexPath.row) else {
             return UITableViewCell()
         }
@@ -227,20 +232,14 @@ extension CategoryListViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        
-        guard let viewModel = viewModel,
-              let category = viewModel.category(at: indexPath.row) else { return }
-        
+        guard let category = viewModel.category(at: indexPath.row) else { return }
         viewModel.selectCategory(category)
-        
         delegate?.didSelectCategory(category)
         navigationController?.popViewController(animated: true)
     }
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        guard let categoryCell = cell as? CategoryTableViewCell,
-              let viewModel = viewModel else { return }
-        
+        guard let categoryCell = cell as? CategoryTableViewCell else { return }
         let numberOfRows = viewModel.numberOfCategories
         var corners: CACornerMask = []
         
@@ -280,8 +279,7 @@ extension CategoryListViewController: UITableViewDelegate {
     }
     
     private func editCategory(at indexPath: IndexPath) {
-        guard let viewModel = viewModel,
-              let category = viewModel.category(at: indexPath.row) else { return }
+        guard let category = viewModel.category(at: indexPath.row) else { return }
         
         viewModel.selectCategory(category)
         let editCategoryVC = NewCategoryViewController()
@@ -293,8 +291,7 @@ extension CategoryListViewController: UITableViewDelegate {
     }
     
     private func showDeleteConfirmation(for indexPath: IndexPath) {
-        guard let viewModel = viewModel,
-              let category = viewModel.category(at: indexPath.row) else { return }
+        guard let category = viewModel.category(at: indexPath.row) else { return }
         
         viewModel.selectCategory(category)
         
@@ -305,7 +302,7 @@ extension CategoryListViewController: UITableViewDelegate {
         )
         
         let deleteAction = UIAlertAction(title: "Удалить", style: .destructive) { [weak self] _ in
-            self?.viewModel?.deleteCategory(at: indexPath.row)
+            self?.viewModel.deleteCategory(at: indexPath.row)
         }
         
         let cancelAction = UIAlertAction(title: "Отменить", style: .cancel)
@@ -321,10 +318,10 @@ extension CategoryListViewController: UITableViewDelegate {
 
 extension CategoryListViewController: NewCategoryViewControllerDelegate {
     func didCreateCategory(_ title: String) {
-        viewModel?.addCategory(title: title)
+        viewModel.addCategory(title: title)
     }
     
     func didUpdateCategory(_ title: String, at index: Int) {
-        viewModel?.updateCategory(at: index, newTitle: title)
+        viewModel.updateCategory(at: index, newTitle: title)
     }
 }

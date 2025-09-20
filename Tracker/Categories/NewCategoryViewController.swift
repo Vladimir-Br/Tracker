@@ -55,13 +55,10 @@ final class NewCategoryViewController: UIViewController {
         textField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         textField.translatesAutoresizingMaskIntoConstraints = false
         
-        // Отступы слева и справа
+        // Отступ слева
         let leftView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
-        let rightView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
         textField.leftView = leftView
         textField.leftViewMode = .always
-        textField.rightView = rightView
-        textField.rightViewMode = .always
         
         return textField
     }()
@@ -99,6 +96,7 @@ final class NewCategoryViewController: UIViewController {
         setupTapGesture()
         
         nameTextField.becomeFirstResponder()
+        updateClearButtonVisibility()
     }
     
     // MARK: - Configuration
@@ -113,6 +111,7 @@ final class NewCategoryViewController: UIViewController {
             titleLabel.text = "Редактирование категории"
             nameTextField.text = category.title
             updateDoneButtonState()
+            updateClearButtonVisibility()
         }
     }
     
@@ -194,6 +193,16 @@ final class NewCategoryViewController: UIViewController {
         errorLabel.text = nil
     }
     
+    private func updateClearButtonVisibility() {
+       
+        if case .edit = mode {
+            let hasText = !(nameTextField.text?.isEmpty ?? true)
+            nameTextField.clearButtonMode = hasText ? .always : .never
+        } else {
+            nameTextField.clearButtonMode = .never
+        }
+    }
+    
     // MARK: - Actions
     
     @objc private func doneButtonTapped() {
@@ -212,6 +221,7 @@ final class NewCategoryViewController: UIViewController {
     
     @objc private func textFieldDidChange() {
         updateDoneButtonState()
+        updateClearButtonVisibility()
     }
     
     @objc private func dismissKeyboard() {

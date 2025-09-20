@@ -399,14 +399,13 @@ extension NewHabitViewController: UITableViewDelegate {
         
         switch indexPath.row {
         case 0:
-            let categoryListVC = CategoryListViewController()
             let viewModel = CategoryListViewModel(categoryStore: categoryStore)
             
             if let selectedCategory = selectedCategory {
                 viewModel.selectCategory(selectedCategory)
             }
             
-            categoryListVC.initialize(viewModel: viewModel)
+            let categoryListVC = CategoryListViewController(viewModel: viewModel)
             categoryListVC.delegate = self
             navigationController?.pushViewController(categoryListVC, animated: true)
         case 1:

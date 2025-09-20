@@ -97,7 +97,6 @@ final class OnboardingViewController: UIPageViewController {
     private func createPage(description: String, imagePage: String) -> UIViewController {
         let viewController = UIViewController()
         
-        // Устанавливаем белый фон для страницы
         viewController.view.backgroundColor = .white
         
         let imageView = UIImageView()
@@ -124,8 +123,8 @@ final class OnboardingViewController: UIPageViewController {
             imageView.trailingAnchor.constraint(equalTo: viewController.view.trailingAnchor),
             imageView.bottomAnchor.constraint(equalTo: viewController.view.bottomAnchor),
            
+            titleLabel.topAnchor.constraint(equalTo: viewController.view.topAnchor, constant: 432),
             titleLabel.centerXAnchor.constraint(equalTo: viewController.view.centerXAnchor),
-            titleLabel.bottomAnchor.constraint(equalTo: viewController.view.bottomAnchor, constant: -270),
             titleLabel.leadingAnchor.constraint(equalTo: viewController.view.leadingAnchor, constant: 16),
             titleLabel.trailingAnchor.constraint(equalTo: viewController.view.trailingAnchor, constant: -16)
         ])

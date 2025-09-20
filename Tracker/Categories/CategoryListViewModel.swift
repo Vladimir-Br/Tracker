@@ -3,7 +3,7 @@ import Foundation
 
 // MARK: - CategoryListViewModel
 
-final class CategoryListViewModel {
+final class CategoryListViewModel: TrackerCategoryStoreDelegate {
     
     // MARK: - Bindings
     
@@ -42,6 +42,7 @@ final class CategoryListViewModel {
     
     init(categoryStore: TrackerCategoryStore) {
         self.categoryStore = categoryStore
+        self.categoryStore.delegate = self
         loadCategories()
     }
     
@@ -54,7 +55,8 @@ final class CategoryListViewModel {
             onErrorStateChange?(nil)
         } catch {
             self.categories = []
-            onErrorStateChange?("Не удалось загрузить категории: \(error.localizedDescription)")
+            let storeError = StoreError.categoryLoadFailed(error)
+            onErrorStateChange?(storeError.localizedDescription)
         }
     }
     
@@ -73,58 +75,44 @@ final class CategoryListViewModel {
     }
     
     func addCategory(title: String) {
-        guard !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            onErrorStateChange?("Название категории не может быть пустым")
-            return
-        }
-        
-        guard title.count <= 38 else {
-            onErrorStateChange?("Название категории не должно превышать 38 символов")
-            return
-        }
-        
         do {
+            try validateCategoryTitle(title)
             _ = try categoryStore.add(title: title)
-            loadCategories()
             onErrorStateChange?(nil)
+        } catch let storeError as StoreError {
+            onErrorStateChange?(storeError.localizedDescription)
         } catch {
-            onErrorStateChange?("Не удалось создать категорию: \(error.localizedDescription)")
+            let storeError = StoreError.categoryCreateFailed(error)
+            onErrorStateChange?(storeError.localizedDescription)
         }
     }
     
     func updateCategory(at index: Int, newTitle: String) {
         guard let category = category(at: index) else {
-            onErrorStateChange?("Категория не найдена")
-            return
-        }
-        
-        guard !newTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            onErrorStateChange?("Название категории не может быть пустым")
-            return
-        }
-        
-        guard newTitle.count <= 38 else {
-            onErrorStateChange?("Название категории не должно превышать 38 символов")
+            onErrorStateChange?(StoreError.categoryNotFound.localizedDescription)
             return
         }
         
         do {
+            try validateCategoryTitle(newTitle)
             try categoryStore.update(id: category.id, title: newTitle)
-            loadCategories()
             onErrorStateChange?(nil)
+        } catch let storeError as StoreError {
+            onErrorStateChange?(storeError.localizedDescription)
         } catch {
-            onErrorStateChange?("Не удалось обновить категорию: \(error.localizedDescription)")
+            let storeError = StoreError.categoryUpdateFailed(error)
+            onErrorStateChange?(storeError.localizedDescription)
         }
     }
     
     func deleteCategory(at index: Int) {
         guard let category = category(at: index) else {
-            onErrorStateChange?("Категория не найдена")
+            onErrorStateChange?(StoreError.categoryNotFound.localizedDescription)
             return
         }
         
         if !category.trackers.isEmpty {
-            onErrorStateChange?("Нельзя удалить категорию, в которой есть трекеры")
+            onErrorStateChange?(StoreError.categoryHasTrackers.localizedDescription)
             return
         }
         
@@ -134,10 +122,10 @@ final class CategoryListViewModel {
                 selectedCategory = nil
             }
             
-            loadCategories()
             onErrorStateChange?(nil)
         } catch {
-            onErrorStateChange?("Не удалось удалить категорию: \(error.localizedDescription)")
+            let storeError = StoreError.categoryDeleteFailed(error)
+            onErrorStateChange?(storeError.localizedDescription)
         }
     }
     
@@ -147,5 +135,27 @@ final class CategoryListViewModel {
     
     func getSelectedCategory() -> TrackerCategory? {
         return selectedCategory
+    }
+    
+    // MARK: - Private Methods
+    
+    private func validateCategoryTitle(_ title: String) throws {
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        if trimmedTitle.isEmpty {
+            throw StoreError.categoryTitleEmpty
+        }
+        
+        if trimmedTitle.count > 38 {
+            throw StoreError.categoryTitleTooLong
+        }
+    }
+}
+
+// MARK: - TrackerCategoryStoreDelegate
+
+extension CategoryListViewModel {
+    func storeDidChange() {
+        loadCategories()
     }
 }
