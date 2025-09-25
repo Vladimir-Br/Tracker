@@ -24,6 +24,7 @@ final class NewHabitViewController: UIViewController {
     // MARK: - Private Properties
     
     private var schedule: [Weekday] = []
+    private var selectedCategory: TrackerCategory?
     private var selectedEmoji: String?
     private var selectedEmojiIndexPath: IndexPath?
     private var selectedColor: UIColor?
@@ -327,9 +328,9 @@ final class NewHabitViewController: UIViewController {
             schedule: self.schedule
         )
         
-        let categoryTitle = "Важное"
+        guard let selectedCategory = selectedCategory else { return }
         
-        delegate?.didCreateTracker(newTracker, categoryTitle: categoryTitle)
+        delegate?.didCreateTracker(newTracker, categoryTitle: selectedCategory.title)
         dismiss(animated: true)
     }
     
@@ -337,10 +338,11 @@ final class NewHabitViewController: UIViewController {
     
     private func checkCreateButtonState() {
         let isNameEntered = !(nameTextField.text?.isEmpty ?? true)
+        let isCategorySelected = selectedCategory != nil
         let isScheduleSelected = !schedule.isEmpty
         let isEmojiSelected = selectedEmoji != nil
         let isColorSelected = selectedColor != nil
-        let isEnabled = isNameEntered && isScheduleSelected && isEmojiSelected && isColorSelected
+        let isEnabled = isNameEntered && isCategorySelected && isScheduleSelected && isEmojiSelected && isColorSelected
         
         createButton.isEnabled = isEnabled
         createButton.backgroundColor = isEnabled ? .black : UIColor(resource: .grayDay)
@@ -368,7 +370,7 @@ extension NewHabitViewController: UITableViewDataSource {
         switch indexPath.row {
         case 0:
             cell.textLabel?.text = "Категория"
-            cell.detailTextLabel?.text = "Важное" //  хардкод до 17 спринта
+            cell.detailTextLabel?.text = selectedCategory?.title
         case 1:
             cell.textLabel?.text = "Расписание"
             if !schedule.isEmpty {
@@ -397,7 +399,15 @@ extension NewHabitViewController: UITableViewDelegate {
         
         switch indexPath.row {
         case 0:
-            break
+            let viewModel = CategoryListViewModel(categoryStore: categoryStore)
+            
+            if let selectedCategory = selectedCategory {
+                viewModel.selectCategory(selectedCategory)
+            }
+            
+            let categoryListVC = CategoryListViewController(viewModel: viewModel)
+            categoryListVC.delegate = self
+            navigationController?.pushViewController(categoryListVC, animated: true)
         case 1:
             let scheduleVC = ScheduleViewController()
             scheduleVC.delegate = self
@@ -427,6 +437,16 @@ extension NewHabitViewController: UITextFieldDelegate {
 extension NewHabitViewController: ScheduleViewControllerDelegate {
     func didConfirmSchedule(selectedDays: Set<Weekday>) {
         self.schedule = Array(selectedDays).sorted(by: { $0.rawValue < $1.rawValue })
+        checkCreateButtonState()
+        menuTableView.reloadData()
+    }
+}
+
+// MARK: - CategorySelectionDelegate
+
+extension NewHabitViewController: CategorySelectionDelegate {
+    func didSelectCategory(_ category: TrackerCategory) {
+        self.selectedCategory = category
         checkCreateButtonState()
         menuTableView.reloadData()
     }

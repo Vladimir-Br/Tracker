@@ -1,3 +1,4 @@
+
 import UIKit
 
 // MARK: - TrackersViewController
@@ -153,7 +154,6 @@ final class TrackersViewController: UIViewController {
         dateContainerView.addSubview(dateLabel)
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: dateContainerView)
-        
         navigationItem.searchController = searchController
         
         NSLayoutConstraint.activate([
@@ -386,7 +386,7 @@ extension TrackersViewController: TrackerCellDelegate {
 
 extension TrackersViewController: NewHabitViewControllerDelegate {
     func didCreateTracker(_ tracker: Tracker, categoryTitle: String) {
-        addTracker(tracker, toCategory: "Важное")
+        addTracker(tracker, toCategory: categoryTitle)
     }
 }
 
