@@ -9,7 +9,7 @@ final class TrackersViewController: UIViewController {
     
     private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ru_RU")
+        formatter.locale = Locale.current
         formatter.dateFormat = "dd.MM.yy"
         return formatter
     }()
@@ -79,7 +79,7 @@ final class TrackersViewController: UIViewController {
         let picker = UIDatePicker()
         picker.datePickerMode = .date
         picker.preferredDatePickerStyle = .compact
-        picker.locale = Locale(identifier: "ru_RU")
+        picker.locale = Locale.current
         picker.addTarget(self, action: #selector(datePickerValueChanged(_:)), for: .valueChanged)
         picker.translatesAutoresizingMaskIntoConstraints = false
         return picker
@@ -98,7 +98,10 @@ final class TrackersViewController: UIViewController {
     
     private lazy var searchController: UISearchController = {
         let controller = UISearchController(searchResultsController: nil)
-        controller.searchBar.placeholder = "Поиск"
+        controller.searchBar.placeholder = NSLocalizedString(
+            "trackers.search.placeholder",
+            comment: "Placeholder for tracker search bar"
+        )
         controller.searchBar.searchTextField.font = UIFont.systemFont(ofSize: 17, weight: .regular)
         controller.searchBar.searchTextField.textColor = UIColor(resource: .grayDay)
         return controller
@@ -114,7 +117,10 @@ final class TrackersViewController: UIViewController {
     
     private let placeholderLabel: UILabel = {
         let label = UILabel()
-        label.text = "Что будем отслеживать?"
+        label.text = NSLocalizedString(
+            "trackers.placeholder.title",
+            comment: "Placeholder title when there are no trackers"
+        )
         label.font = UIFont.systemFont(ofSize: 12, weight: .medium)
         label.textColor = UIColor(resource: .blackDay)
         label.textAlignment = .center
@@ -146,7 +152,10 @@ final class TrackersViewController: UIViewController {
     
     private func setupNavigationBar() {
         navigationController?.navigationBar.prefersLargeTitles = true
-        title = "Трекеры"
+        title = NSLocalizedString(
+            "trackers.title",
+            comment: "Navigation title for trackers screen"
+        )
         navigationItem.leftBarButtonItem = addButton
         let dateContainerView = UIView()
         dateContainerView.translatesAutoresizingMaskIntoConstraints = false

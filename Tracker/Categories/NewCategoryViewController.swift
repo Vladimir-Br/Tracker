@@ -45,7 +45,10 @@ final class NewCategoryViewController: UIViewController {
     
     private lazy var nameTextField: UITextField = {
         let textField = UITextField()
-        textField.placeholder = "Введите название категории"
+        textField.placeholder = NSLocalizedString(
+            "newCategory.placeholder",
+            comment: "Placeholder for category name field"
+        )
         textField.font = .systemFont(ofSize: 17)
         textField.textColor = UIColor(resource: .blackDay)
         textField.backgroundColor = .clear
@@ -75,7 +78,10 @@ final class NewCategoryViewController: UIViewController {
     
     private lazy var doneButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Готово", for: .normal)
+        button.setTitle(
+            NSLocalizedString("newCategory.button.done", comment: "Done button title"),
+            for: .normal
+        )
         button.setTitleColor(.white, for: .normal)
         button.backgroundColor = UIColor(resource: .grayDay)
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
@@ -106,9 +112,15 @@ final class NewCategoryViewController: UIViewController {
         
         switch mode {
         case .create:
-            titleLabel.text = "Новая категория"
+            titleLabel.text = NSLocalizedString(
+                "newCategory.title.create",
+                comment: "Title for creating new category"
+            )
         case .edit(let category, _):
-            titleLabel.text = "Редактирование категории"
+            titleLabel.text = NSLocalizedString(
+                "newCategory.title.edit",
+                comment: "Title for editing category"
+            )
             nameTextField.text = category.title
             updateDoneButtonState()
             updateClearButtonVisibility()
@@ -119,7 +131,10 @@ final class NewCategoryViewController: UIViewController {
     
     private func setupUI() {
         view.backgroundColor = .white
-        titleLabel.text = "Новая категория"
+        titleLabel.text = NSLocalizedString(
+            "newCategory.title.create",
+            comment: "Default title for new category screen"
+        )
         
         view.addSubview(titleLabel)
         view.addSubview(textFieldContainer)
@@ -177,7 +192,12 @@ final class NewCategoryViewController: UIViewController {
         
         let text = nameTextField.text ?? ""
         if text.count > 38 {
-            showError("Ограничение 38 символов")
+            showError(
+                NSLocalizedString(
+                    "newCategory.error.limit",
+                    comment: "Error message when category name exceeds limit"
+                )
+            )
         } else {
             hideError()
         }

@@ -1,0 +1,69 @@
+
+"onboarding.page1.description" = "Track only what matters to you";
+"onboarding.page2.description" = "Even if it isn’t liters of water and yoga";
+"onboarding.button.skip" = "That’s some tech!";
+
+"trackers.title" = "Trackers";
+"trackers.search.placeholder" = "Search";
+"trackers.placeholder.title" = "What should we track?";
+
+"tabbar.trackers" = "Trackers";
+"tabbar.statistics" = "Statistics";
+
+"newHabit.title" = "New Habit";
+"newHabit.placeholder.name" = "Enter tracker name";
+"newHabit.button.cancel" = "Cancel";
+"newHabit.button.create" = "Create";
+"newHabit.section.emoji" = "Emoji";
+"newHabit.section.color" = "Color";
+"newHabit.menu.category" = "Category";
+"newHabit.menu.schedule" = "Schedule";
+"newHabit.schedule.everyday" = "Every day";
+
+"schedule.title" = "Schedule";
+"schedule.button.done" = "Done";
+
+"categoryList.title" = "Category";
+"categoryList.placeholder" = "Habits and events can be\n grouped by meaning";
+"categoryList.button.add" = "Add category";
+"categoryList.alert.error.title" = "Error";
+"categoryList.alert.error.ok" = "OK";
+"categoryList.context.edit" = "Edit";
+"categoryList.context.delete" = "Delete";
+"categoryList.alert.delete.message" = "Do you really want to delete this category?";
+"categoryList.alert.cancel" = "Cancel";
+
+"newCategory.title.create" = "New category";
+"newCategory.title.edit" = "Edit category";
+"newCategory.placeholder" = "Enter category name";
+"newCategory.button.done" = "Done";
+"newCategory.error.limit" = "Limit of 38 characters";
+
+"storeError.trackerNotFound" = "Tracker not found";
+"storeError.categoryNotFound" = "Category not found";
+"storeError.recordNotFound" = "Record not found";
+"storeError.saveError" = "Save error: %@";
+"storeError.categoryTitleEmpty" = "Category name cannot be empty";
+"storeError.categoryTitleTooLong" = "Category name must be 38 characters or fewer";
+"storeError.categoryHasTrackers" = "Cannot delete a category that still has trackers";
+"storeError.categoryCreateFailed" = "Failed to create category: %@";
+"storeError.categoryUpdateFailed" = "Failed to update category: %@";
+"storeError.categoryDeleteFailed" = "Failed to delete category: %@";
+"storeError.categoryLoadFailed" = "Failed to load categories: %@";
+
+"weekday.sunday.full" = "Sunday";
+"weekday.monday.full" = "Monday";
+"weekday.tuesday.full" = "Tuesday";
+"weekday.wednesday.full" = "Wednesday";
+"weekday.thursday.full" = "Thursday";
+"weekday.friday.full" = "Friday";
+"weekday.saturday.full" = "Saturday";
+
+"weekday.sunday.short" = "Sun";
+"weekday.monday.short" = "Mon";
+"weekday.tuesday.short" = "Tue";
+"weekday.wednesday.short" = "Wed";
+"weekday.thursday.short" = "Thu";
+"weekday.friday.short" = "Fri";
+"weekday.saturday.short" = "Sat";
+

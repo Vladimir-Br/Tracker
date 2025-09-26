@@ -1,0 +1,68 @@
+
+"onboarding.page1.description" = "Отслеживайте только то, что хотите";
+"onboarding.page2.description" = "Даже если это не литры воды и йога";
+"onboarding.button.skip" = "Вот это технологии!";
+
+"trackers.title" = "Трекеры";
+"trackers.search.placeholder" = "Поиск";
+"trackers.placeholder.title" = "Что будем отслеживать?";
+
+"tabbar.trackers" = "Трекеры";
+"tabbar.statistics" = "Статистика";
+
+"newHabit.title" = "Новая привычка";
+"newHabit.placeholder.name" = "Введите название трекера";
+"newHabit.button.cancel" = "Отменить";
+"newHabit.button.create" = "Создать";
+"newHabit.section.emoji" = "Emoji";
+"newHabit.section.color" = "Цвет";
+"newHabit.menu.category" = "Категория";
+"newHabit.menu.schedule" = "Расписание";
+"newHabit.schedule.everyday" = "Каждый день";
+
+"schedule.title" = "Расписание";
+"schedule.button.done" = "Готово";
+
+"categoryList.title" = "Категория";
+"categoryList.placeholder" = "Привычки и события можно\n объединить по смыслу";
+"categoryList.button.add" = "Добавить категорию";
+"categoryList.alert.error.title" = "Ошибка";
+"categoryList.alert.error.ok" = "OK";
+"categoryList.context.edit" = "Редактировать";
+"categoryList.context.delete" = "Удалить";
+"categoryList.alert.delete.message" = "Эта категория точно не нужна?";
+"categoryList.alert.cancel" = "Отменить";
+
+"newCategory.title.create" = "Новая категория";
+"newCategory.title.edit" = "Редактирование категории";
+"newCategory.placeholder" = "Введите название категории";
+"newCategory.button.done" = "Готово";
+"newCategory.error.limit" = "Ограничение 38 символов";
+
+"storeError.trackerNotFound" = "Трекер не найден";
+"storeError.categoryNotFound" = "Категория не найдена";
+"storeError.recordNotFound" = "Запись не найдена";
+"storeError.saveError" = "Ошибка сохранения: %@";
+"storeError.categoryTitleEmpty" = "Название категории не может быть пустым";
+"storeError.categoryTitleTooLong" = "Название категории не должно превышать 38 символов";
+"storeError.categoryHasTrackers" = "Нельзя удалить категорию, в которой есть трекеры";
+"storeError.categoryCreateFailed" = "Не удалось создать категорию: %@";
+"storeError.categoryUpdateFailed" = "Не удалось обновить категорию: %@";
+"storeError.categoryDeleteFailed" = "Не удалось удалить категорию: %@";
+"storeError.categoryLoadFailed" = "Не удалось загрузить категории: %@";
+
+"weekday.sunday.full" = "Воскресенье";
+"weekday.monday.full" = "Понедельник";
+"weekday.tuesday.full" = "Вторник";
+"weekday.wednesday.full" = "Среда";
+"weekday.thursday.full" = "Четверг";
+"weekday.friday.full" = "Пятница";
+"weekday.saturday.full" = "Суббота";
+
+"weekday.sunday.short" = "Вс";
+"weekday.monday.short" = "Пн";
+"weekday.tuesday.short" = "Вт";
+"weekday.wednesday.short" = "Ср";
+"weekday.thursday.short" = "Чт";
+"weekday.friday.short" = "Пт";
+"weekday.saturday.short" = "Сб";

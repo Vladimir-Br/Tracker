@@ -55,25 +55,39 @@ enum Weekday: Int, CaseIterable {
     
     var title: String {
         switch self {
-        case .sunday: return "Воскресенье"
-        case .monday: return "Понедельник"
-        case .tuesday: return "Вторник"
-        case .wednesday: return "Среда"
-        case .thursday: return "Четверг"
-        case .friday: return "Пятница"
-        case .saturday: return "Суббота"
+        case .sunday:
+            return NSLocalizedString("weekday.sunday.full", comment: "Full name for Sunday")
+        case .monday:
+            return NSLocalizedString("weekday.monday.full", comment: "Full name for Monday")
+        case .tuesday:
+            return NSLocalizedString("weekday.tuesday.full", comment: "Full name for Tuesday")
+        case .wednesday:
+            return NSLocalizedString("weekday.wednesday.full", comment: "Full name for Wednesday")
+        case .thursday:
+            return NSLocalizedString("weekday.thursday.full", comment: "Full name for Thursday")
+        case .friday:
+            return NSLocalizedString("weekday.friday.full", comment: "Full name for Friday")
+        case .saturday:
+            return NSLocalizedString("weekday.saturday.full", comment: "Full name for Saturday")
         }
     }
     
     var shortTitle: String {
         switch self {
-        case .sunday: return "Вс"
-        case .monday: return "Пн"
-        case .tuesday: return "Вт"
-        case .wednesday: return "Ср"
-        case .thursday: return "Чт"
-        case .friday: return "Пт"
-        case .saturday: return "Сб"
+        case .sunday:
+            return NSLocalizedString("weekday.sunday.short", comment: "Short name for Sunday")
+        case .monday:
+            return NSLocalizedString("weekday.monday.short", comment: "Short name for Monday")
+        case .tuesday:
+            return NSLocalizedString("weekday.tuesday.short", comment: "Short name for Tuesday")
+        case .wednesday:
+            return NSLocalizedString("weekday.wednesday.short", comment: "Short name for Wednesday")
+        case .thursday:
+            return NSLocalizedString("weekday.thursday.short", comment: "Short name for Thursday")
+        case .friday:
+            return NSLocalizedString("weekday.friday.short", comment: "Short name for Friday")
+        case .saturday:
+            return NSLocalizedString("weekday.saturday.short", comment: "Short name for Saturday")
         }
     }
 }

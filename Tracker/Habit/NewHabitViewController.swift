@@ -61,8 +61,6 @@ final class NewHabitViewController: UIViewController {
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Новая привычка"
-        
         let font = UIFont.systemFont(ofSize: 16, weight: .medium)
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.lineHeightMultiple = 22.0 / 16.0
@@ -74,7 +72,10 @@ final class NewHabitViewController: UIViewController {
             .kern: 0
         ]
         
-        label.attributedText = NSAttributedString(string: "Новая привычка", attributes: attributes)
+        label.attributedText = NSAttributedString(
+            string: NSLocalizedString("newHabit.title", comment: "Title for new habit screen"),
+            attributes: attributes
+        )
         label.textColor = UIColor(resource: .blackDay)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -82,7 +83,10 @@ final class NewHabitViewController: UIViewController {
     
     private let nameTextField: UITextField = {
         let textField = UITextField()
-        textField.placeholder = "Введите название трекера"
+        textField.placeholder = NSLocalizedString(
+            "newHabit.placeholder.name",
+            comment: "Placeholder for tracker name field"
+        )
         textField.backgroundColor = UIColor(resource: .backgroundDay)
         textField.layer.cornerRadius = 16
         textField.font = .systemFont(ofSize: 17)
@@ -108,7 +112,10 @@ final class NewHabitViewController: UIViewController {
     
     private let cancelButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Отменить", for: .normal)
+        button.setTitle(
+            NSLocalizedString("newHabit.button.cancel", comment: "Cancel button title"),
+            for: .normal
+        )
         button.setTitleColor(.red, for: .normal)
         button.backgroundColor = .white
         button.layer.borderWidth = 1
@@ -120,7 +127,10 @@ final class NewHabitViewController: UIViewController {
     
     private let createButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Создать", for: .normal)
+        button.setTitle(
+            NSLocalizedString("newHabit.button.create", comment: "Create tracker button title"),
+            for: .normal
+        )
         button.setTitleColor(.white, for: .normal)
         button.backgroundColor = UIColor(resource: .grayDay)
         button.layer.cornerRadius = 16
@@ -161,7 +171,10 @@ final class NewHabitViewController: UIViewController {
     
     private let emojiLabel: UILabel = {
         let label = UILabel()
-        label.text = "Emoji"
+        label.text = NSLocalizedString(
+            "newHabit.section.emoji",
+            comment: "Title for emoji selection section"
+        )
         label.font = UIFont.systemFont(ofSize: 19, weight: .bold)
         label.textColor = UIColor(resource: .blackDay)
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -191,7 +204,10 @@ final class NewHabitViewController: UIViewController {
     
     private let colorLabel: UILabel = {
         let label = UILabel()
-        label.text = "Цвет"
+        label.text = NSLocalizedString(
+            "newHabit.section.color",
+            comment: "Title for color selection section"
+        )
         label.font = UIFont.systemFont(ofSize: 19, weight: .bold)
         label.textColor = UIColor(resource: .blackDay)
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -369,12 +385,20 @@ extension NewHabitViewController: UITableViewDataSource {
         
         switch indexPath.row {
         case 0:
-            cell.textLabel?.text = "Категория"
+            cell.textLabel?.text = NSLocalizedString(
+                "newHabit.menu.category",
+                comment: "Menu title for category selection"
+            )
             cell.detailTextLabel?.text = selectedCategory?.title
         case 1:
-            cell.textLabel?.text = "Расписание"
+            cell.textLabel?.text = NSLocalizedString(
+                "newHabit.menu.schedule",
+                comment: "Menu title for schedule selection"
+            )
             if !schedule.isEmpty {
-                let scheduleText = schedule.count == 7 ? "Каждый день" : schedule.map { $0.shortTitle }.joined(separator: ", ")
+                let scheduleText = schedule.count == 7
+                    ? NSLocalizedString("newHabit.schedule.everyday", comment: "Title for everyday schedule option")
+                    : schedule.map { $0.shortTitle }.joined(separator: ", ")
                 cell.detailTextLabel?.text = scheduleText
             }
             
