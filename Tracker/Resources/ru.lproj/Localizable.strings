@@ -6,12 +6,20 @@
 "trackers.title" = "Трекеры";
 "trackers.search.placeholder" = "Поиск";
 "trackers.placeholder.title" = "Что будем отслеживать?";
+"trackers.pinned.section.title" = "Закреплённые";
+"trackers.context.pin" = "Закрепить";
+"trackers.context.unpin" = "Открепить";
+"trackers.context.edit" = "Редактировать";
+"trackers.context.delete" = "Удалить";
+"trackers.delete.alert.title" = "Уверены что хотите удалить трекер?";
 
 "tabbar.trackers" = "Трекеры";
 "tabbar.statistics" = "Статистика";
 
 "newHabit.title" = "Новая привычка";
 "newHabit.placeholder.name" = "Введите название трекера";
+"editHabit.title" = "Редактирование привычки";
+"editHabit.saveButton" = "Сохранить";
 "newHabit.button.cancel" = "Отменить";
 "newHabit.button.create" = "Создать";
 "newHabit.section.emoji" = "Emoji";
@@ -66,3 +74,4 @@
 "weekday.thursday.short" = "Чт";
 "weekday.friday.short" = "Пт";
 "weekday.saturday.short" = "Сб";
+

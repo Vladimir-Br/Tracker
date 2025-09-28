@@ -6,12 +6,20 @@
 "trackers.title" = "Trackers";
 "trackers.search.placeholder" = "Search";
 "trackers.placeholder.title" = "What should we track?";
+"trackers.pinned.section.title" = "Pinned";
+"trackers.context.pin" = "Pin";
+"trackers.context.unpin" = "Unpin";
+"trackers.context.edit" = "Edit";
+"trackers.context.delete" = "Delete";
+"trackers.delete.alert.title" = "Are you sure you want to delete the tracker?";
 
 "tabbar.trackers" = "Trackers";
 "tabbar.statistics" = "Statistics";
 
 "newHabit.title" = "New Habit";
 "newHabit.placeholder.name" = "Enter tracker name";
+"editHabit.title" = "Edit Habit";
+"editHabit.saveButton" = "Save";
 "newHabit.button.cancel" = "Cancel";
 "newHabit.button.create" = "Create";
 "newHabit.section.emoji" = "Emoji";
@@ -66,4 +74,5 @@
 "weekday.thursday.short" = "Thu";
 "weekday.friday.short" = "Fri";
 "weekday.saturday.short" = "Sat";
+
 

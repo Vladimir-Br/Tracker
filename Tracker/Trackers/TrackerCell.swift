@@ -5,6 +5,7 @@ import UIKit
 
 protocol TrackerCellDelegate: AnyObject {
     func didTapCompleteButton(for cell: TrackerCell)
+    func didRequestContextMenu(for cell: TrackerCell, at location: CGPoint) -> UIContextMenuConfiguration?
 }
 
 // MARK: - TrackerCell
@@ -15,6 +16,7 @@ final class TrackerCell: UICollectionViewCell {
     
     static let reuseIdentifier = "TrackerCell"
     weak var delegate: TrackerCellDelegate?
+    private var trackerId: UUID?
     
     // MARK: - UI Elements
     
@@ -33,6 +35,14 @@ final class TrackerCell: UICollectionViewCell {
         return view
     }()
     
+    private let pinImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.contentMode = .scaleAspectFit
+        imageView.isHidden = true
+        return imageView
+    }()
+
     private let emojiLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 16)
@@ -90,6 +100,11 @@ final class TrackerCell: UICollectionViewCell {
         cardView.addSubview(emojiBackgroundView)
         emojiBackgroundView.addSubview(emojiLabel)
         cardView.addSubview(nameLabel)
+        cardView.addSubview(pinImageView)
+        
+        // Добавляем контекстное меню только к cardView
+        let contextMenuInteraction = UIContextMenuInteraction(delegate: self)
+        cardView.addInteraction(contextMenuInteraction)
     }
     
     private func setupLayout() {
@@ -112,6 +127,11 @@ final class TrackerCell: UICollectionViewCell {
             nameLabel.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -12),
             nameLabel.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -12),
             
+            pinImageView.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 12),
+            pinImageView.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -4),
+            pinImageView.widthAnchor.constraint(equalToConstant: 24),
+            pinImageView.heightAnchor.constraint(equalToConstant: 24),
+
             completeButton.topAnchor.constraint(equalTo: cardView.bottomAnchor, constant: 8),
             completeButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -12),
             completeButton.widthAnchor.constraint(equalToConstant: 34),
@@ -125,6 +145,8 @@ final class TrackerCell: UICollectionViewCell {
     // MARK: - Public Methods
     
     func configure(with tracker: Tracker, isCompleted: Bool, count: Int, at date: Date) {
+        self.trackerId = tracker.id
+        
         cardView.backgroundColor = tracker.color
         emojiLabel.text = tracker.emoji
         nameLabel.text = tracker.name
@@ -141,7 +163,15 @@ final class TrackerCell: UICollectionViewCell {
         let calendar = Calendar.current
         let isFutureDay = calendar.startOfDay(for: date) > calendar.startOfDay(for: Date())
         completeButton.isEnabled = !isFutureDay
+
+        let symbolConfiguration = UIImage.SymbolConfiguration(pointSize: 24, weight: .regular)
+        let paletteConfiguration = UIImage.SymbolConfiguration(paletteColors: [UIColor.white, tracker.color])
+        let combinedConfiguration = symbolConfiguration.applying(paletteConfiguration)
+        pinImageView.preferredSymbolConfiguration = combinedConfiguration
+        pinImageView.image = UIImage(systemName: "pin.square.fill")?.withConfiguration(combinedConfiguration)
+        pinImageView.isHidden = !tracker.isPinned
     }
+
     
     // MARK: - Actions
     
@@ -159,5 +189,17 @@ final class TrackerCell: UICollectionViewCell {
             ),
             count
         )
+    }
+}
+
+// MARK: - UIContextMenuInteractionDelegate
+
+extension TrackerCell: UIContextMenuInteractionDelegate {
+    func contextMenuInteraction(
+        _ interaction: UIContextMenuInteraction,
+        configurationForMenuAtLocation location: CGPoint
+    ) -> UIContextMenuConfiguration? {
+        
+        return delegate?.didRequestContextMenu(for: self, at: location)
     }
 }

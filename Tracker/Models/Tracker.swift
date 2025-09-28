@@ -9,13 +9,22 @@ struct Tracker {
     let color: UIColor
     let emoji: String
     let schedule: [Weekday]
+    let isPinned: Bool
     
-    init(id: UUID = UUID(), name: String, color: UIColor, emoji: String, schedule: [Weekday]) {
+    init(
+        id: UUID = UUID(),
+        name: String,
+        color: UIColor,
+        emoji: String,
+        schedule: [Weekday],
+        isPinned: Bool = false
+    ) {
         self.id = id
         self.name = name
         self.color = color
         self.emoji = emoji
         self.schedule = schedule
+        self.isPinned = isPinned
     }
     
     init?(from coreDataObject: TrackerCoreData) {
@@ -38,7 +47,14 @@ struct Tracker {
             schedule = []
         }
         
-        self.init(id: id, name: name, color: color, emoji: emoji, schedule: schedule)
+        self.init(
+            id: id,
+            name: name,
+            color: color,
+            emoji: emoji,
+            schedule: schedule,
+            isPinned: coreDataObject.isPinned
+        )
     }
 }
 

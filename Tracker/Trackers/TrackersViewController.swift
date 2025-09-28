@@ -44,21 +44,43 @@ final class TrackersViewController: UIViewController {
         let calendar = Calendar.current
         let weekday = calendar.component(.weekday, from: currentDate)
         
-        return categories.compactMap { category -> TrackerCategory? in
-            let trackers = category.trackers.filter { tracker in
-                if tracker.schedule.isEmpty {
-                    return true
-                }
-                let isVisible = tracker.schedule.contains { $0.rawValue == weekday }
-                return isVisible
+        var pinned: [Tracker] = []
+        var regularCategories: [TrackerCategory] = []
+        
+        for category in categories {
+            let filteredTrackers = category.trackers.filter { tracker in
+                let matchesSchedule = tracker.schedule.isEmpty || tracker.schedule.contains(where: { $0.rawValue == weekday })
+                return matchesSchedule
             }
             
-            guard !trackers.isEmpty else {
-                return nil
-            }
+            let pinnedInCategory = filteredTrackers.filter { $0.isPinned }
+            pinned.append(contentsOf: pinnedInCategory)
             
-            return TrackerCategory(id: category.id, title: category.title, trackers: trackers)
+            let nonPinnedTrackers = filteredTrackers.filter { !$0.isPinned }
+            guard !nonPinnedTrackers.isEmpty else { continue }
+            regularCategories.append(
+                TrackerCategory(
+                    id: category.id,
+                    title: category.title,
+                    trackers: nonPinnedTrackers
+                )
+            )
         }
+        
+        if pinned.isEmpty {
+            return regularCategories
+        }
+        
+        let pinnedCategory = TrackerCategory(
+            id: UUID(),
+            title: NSLocalizedString(
+                "trackers.pinned.section.title",
+                comment: "Title for pinned trackers section"
+            ),
+            trackers: pinned
+        )
+        
+        return [pinnedCategory] + regularCategories
     }
     
     // MARK: - UI Elements
@@ -242,6 +264,113 @@ final class TrackersViewController: UIViewController {
             categories = []
         }
     }
+
+    private func makeContextMenu(for tracker: Tracker, at indexPath: IndexPath) -> UIMenu {
+        let pinTitle = tracker.isPinned
+            ? NSLocalizedString(
+                "trackers.context.unpin",
+                comment: "Context menu title for unpinning tracker"
+            )
+            : NSLocalizedString(
+                "trackers.context.pin",
+                comment: "Context menu title for pinning tracker"
+            )
+        let pinAction = UIAction(title: pinTitle) { [weak self] _ in
+            self?.togglePin(with: tracker.id)
+        }
+        let editAction = UIAction(
+            title: NSLocalizedString(
+                "trackers.context.edit",
+                comment: "Context menu title for editing tracker"
+            )
+        ) { [weak self] _ in
+            self?.editTracker(with: tracker.id)
+        }
+        let deleteAction = UIAction(
+            title: NSLocalizedString(
+                "trackers.context.delete",
+                comment: "Context menu title for deleting tracker"
+            ),
+            attributes: .destructive
+        ) { [weak self] _ in
+            self?.deleteTracker(with: tracker.id)
+        }
+        return UIMenu(children: [pinAction, editAction, deleteAction])
+    }
+
+    private func togglePin(with trackerId: UUID) {
+        guard let tracker = categories.flatMap({ $0.trackers }).first(where: { $0.id == trackerId }) else {
+            return
+        }
+        let updatedTracker = Tracker(
+            id: tracker.id,
+            name: tracker.name,
+            color: tracker.color,
+            emoji: tracker.emoji,
+            schedule: tracker.schedule,
+            isPinned: !tracker.isPinned
+        )
+        do {
+            try trackerStore.update(updatedTracker)
+            // Делегат автоматически вызовет storeDidChange() и обновит UI
+        } catch {
+            print("Ошибка при обновлении закрепления трекера: \(error)")
+        }
+    }
+
+    private func editTracker(with trackerId: UUID) {
+        guard let tracker = categories.flatMap({ $0.trackers }).first(where: { $0.id == trackerId }) else {
+            return
+        }
+        
+        // Находим категорию трекера
+        let categoryTitle = categories.first { category in
+            category.trackers.contains { $0.id == trackerId }
+        }?.title ?? ""
+        
+        // Подсчитываем количество выполненных дней
+        let completedDays = completedTrackers.filter { $0.trackerId == trackerId }.count
+        
+        let editController = NewHabitViewController(
+            coreDataManager: coreDataManager,
+            editingTracker: tracker,
+            categoryTitle: categoryTitle,
+            completedDays: completedDays
+        )
+        editController.delegate = self
+        let navigationController = UINavigationController(rootViewController: editController)
+        present(navigationController, animated: true)
+    }
+
+    private func deleteTracker(with trackerId: UUID) {
+        let alert = UIAlertController(
+            title: NSLocalizedString("trackers.delete.alert.title", comment: "Alert title for deleting tracker"),
+            message: nil,
+            preferredStyle: .actionSheet
+        )
+        
+        let deleteAction = UIAlertAction(
+            title: NSLocalizedString("trackers.context.delete", comment: "Context menu title for deleting tracker"),
+            style: .destructive
+        ) { [weak self] _ in
+            do {
+                try self?.trackerStore.delete(trackerId: trackerId)
+            } catch {
+                print("Ошибка при удалении трекера: \(error)")
+            }
+        }
+        
+        let cancelAction = UIAlertAction(
+            title: NSLocalizedString("categoryList.alert.cancel", comment: "Cancel button title"),
+            style: .cancel,
+            handler: nil
+        )
+        
+        alert.addAction(deleteAction)
+        alert.addAction(cancelAction)
+        
+        present(alert, animated: true, completion: nil)
+    }
     
     private func loadCompletedTrackers() {
         do {
@@ -372,7 +501,6 @@ extension TrackersViewController: TrackerCellDelegate {
     func didTapCompleteButton(for cell: TrackerCell) {
         guard let indexPath = collectionView.indexPath(for: cell) else { return }
         let tracker = visibleCategories[indexPath.section].trackers[indexPath.item]
-        
         let calendar = Calendar.current
         let startOfDay = calendar.startOfDay(for: currentDate)
         let record = TrackerRecord(trackerId: tracker.id, date: startOfDay)
@@ -389,6 +517,16 @@ extension TrackersViewController: TrackerCellDelegate {
         } catch {
         }
     }
+    
+    func didRequestContextMenu(for cell: TrackerCell, at location: CGPoint) -> UIContextMenuConfiguration? {
+        guard let indexPath = collectionView.indexPath(for: cell) else { return nil }
+        let tracker = visibleCategories[indexPath.section].trackers[indexPath.item]
+        
+        return UIContextMenuConfiguration(identifier: indexPath as NSCopying, actionProvider: { [weak self] _ in
+            guard let self else { return nil }
+            return self.makeContextMenu(for: tracker, at: indexPath)
+        })
+    }
 }
 
 // MARK: - NewHabitViewControllerDelegate
@@ -396,6 +534,25 @@ extension TrackersViewController: TrackerCellDelegate {
 extension TrackersViewController: NewHabitViewControllerDelegate {
     func didCreateTracker(_ tracker: Tracker, categoryTitle: String) {
         addTracker(tracker, toCategory: categoryTitle)
+    }
+    
+    func didUpdateTracker(_ tracker: Tracker, categoryTitle: String) {
+        do {
+            try trackerStore.update(tracker)
+            
+            if categoryTitle != originalCategoryTitle(for: tracker.id),
+               let newCategory = categories.first(where: { $0.title == categoryTitle }) {
+                try trackerStore.updateCategory(for: tracker.id, newCategoryId: newCategory.id)
+            }
+        } catch {
+            print("Ошибка при обновлении трекера: \(error)")
+        }
+    }
+    
+    private func originalCategoryTitle(for trackerId: UUID) -> String {
+        return categories.first { category in
+            category.trackers.contains { $0.id == trackerId }
+        }?.title ?? ""
     }
 }
 
