@@ -21,6 +21,7 @@ final class TrackersViewController: UIViewController {
     private var categories: [TrackerCategory] = []
     private var completedTrackers: Set<TrackerRecord> = []
     private var currentDate: Date = Date()
+    private var currentFilter: TrackerFilter = .all
     
     // MARK: - Initialization
     
@@ -49,8 +50,21 @@ final class TrackersViewController: UIViewController {
         
         for category in categories {
             let filteredTrackers = category.trackers.filter { tracker in
+                // Фильтр по расписанию
                 let matchesSchedule = tracker.schedule.isEmpty || tracker.schedule.contains(where: { $0.rawValue == weekday })
-                return matchesSchedule
+                guard matchesSchedule else { return false }
+                
+                // Применяем выбранный фильтр
+                switch currentFilter {
+                case .all:
+                    return true
+                case .today:
+                    return true // Уже учтено в matchesSchedule
+                case .completed:
+                    return isTrackerCompleted(tracker.id)
+                case .uncompleted:
+                    return !isTrackerCompleted(tracker.id)
+                }
             }
             
             let pinnedInCategory = filteredTrackers.filter { $0.isPinned }
@@ -131,7 +145,6 @@ final class TrackersViewController: UIViewController {
     
     private let placeholderImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = UIImage(named: "StarCircle")
         imageView.contentMode = .scaleAspectFit
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
@@ -139,10 +152,6 @@ final class TrackersViewController: UIViewController {
     
     private let placeholderLabel: UILabel = {
         let label = UILabel()
-        label.text = NSLocalizedString(
-            "trackers.placeholder.title",
-            comment: "Placeholder title when there are no trackers"
-        )
         label.font = UIFont.systemFont(ofSize: 12, weight: .medium)
         label.textColor = UIColor(resource: .blackDay)
         label.textAlignment = .center
@@ -156,6 +165,17 @@ final class TrackersViewController: UIViewController {
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.backgroundColor = .clear
         return collectionView
+    }()
+    
+    private let filterButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle(NSLocalizedString("filters.button.title", comment: "Filters button title"), for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .regular)
+        button.backgroundColor = UIColor(resource: .blueDay)
+        button.layer.cornerRadius = 16
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
     }()
     
     // MARK: - Lifecycle
@@ -209,9 +229,12 @@ final class TrackersViewController: UIViewController {
         view.addSubview(placeholderImageView)
         view.addSubview(placeholderLabel)
         view.addSubview(collectionView)
+        view.addSubview(filterButton)
         
         collectionView.dataSource = self
         collectionView.delegate = self
+        
+        filterButton.addTarget(self, action: #selector(filterButtonTapped), for: .touchUpInside)
     }
     
     private func setupLayout() {
@@ -227,8 +250,15 @@ final class TrackersViewController: UIViewController {
             placeholderImageView.heightAnchor.constraint(equalToConstant: 80),
             
             placeholderLabel.topAnchor.constraint(equalTo: placeholderImageView.bottomAnchor, constant: 8),
-            placeholderLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+            placeholderLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            filterButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            filterButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
+            filterButton.widthAnchor.constraint(equalToConstant: 114),
+            filterButton.heightAnchor.constraint(equalToConstant: 50)
         ])
+        
+        collectionView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 66, right: 0)
     }
     
     private func registerViews() {
@@ -255,6 +285,13 @@ final class TrackersViewController: UIViewController {
     private func loadData() {
         loadCategories()
         loadCompletedTrackers()
+        loadCurrentFilter()
+    }
+    
+    private func isTrackerCompleted(_ trackerId: UUID) -> Bool {
+        return completedTrackers.contains { record in
+            record.trackerId == trackerId && Calendar.current.isDate(record.date, inSameDayAs: currentDate)
+        }
     }
     
     private func loadCategories() {
@@ -331,7 +368,7 @@ final class TrackersViewController: UIViewController {
         // Подсчитываем количество выполненных дней
         let completedDays = completedTrackers.filter { $0.trackerId == trackerId }.count
         
-        let editController = NewHabitViewController(
+        let editController = EditHabitViewController(
             coreDataManager: coreDataManager,
             editingTracker: tracker,
             categoryTitle: categoryTitle,
@@ -388,6 +425,7 @@ final class TrackersViewController: UIViewController {
     private func updateUI() {
         updateDateLabel(with: currentDate)
         reloadCollectionView()
+        updateFilterButtonVisibility()
     }
     
     private func reloadCollectionView() {
@@ -396,10 +434,48 @@ final class TrackersViewController: UIViewController {
     }
     
     private func updatePlaceholderVisibility() {
-        let isVisible = !visibleCategories.isEmpty
-        placeholderImageView.isHidden = isVisible
-        placeholderLabel.isHidden = isVisible
-        collectionView.isHidden = !isVisible
+        let hasContent = !visibleCategories.isEmpty
+        placeholderImageView.isHidden = hasContent
+        placeholderLabel.isHidden = hasContent
+        collectionView.isHidden = !hasContent
+        
+        if !hasContent {
+            let isFilterActive = !currentFilter.isResetFilter
+            
+            if isFilterActive {
+                placeholderImageView.image = UIImage(named: "Nothing was found")
+                placeholderLabel.text = NSLocalizedString(
+                    "trackers.placeholder.nothingFound",
+                    comment: "Nothing found placeholder"
+                )
+            } else {
+                placeholderImageView.image = UIImage(named: "StarCircle")
+                placeholderLabel.text = NSLocalizedString(
+                    "trackers.placeholder.title",
+                    comment: "Placeholder title when there are no trackers"
+                )
+            }
+        }
+    }
+    
+    private func updateFilterButtonVisibility() {
+        let hasTrackersOnSelectedDate = hasTrackersOnDate(currentDate)
+        filterButton.isHidden = !hasTrackersOnSelectedDate
+    }
+    
+    private func hasTrackersOnDate(_ date: Date) -> Bool {
+        let calendar = Calendar.current
+        let weekday = calendar.component(.weekday, from: date)
+        
+        for category in categories {
+            let trackersForDate = category.trackers.filter { tracker in
+                tracker.schedule.isEmpty || tracker.schedule.contains(where: { $0.rawValue == weekday })
+            }
+            if !trackersForDate.isEmpty {
+                return true
+            }
+        }
+        return false
     }
     
     private func isTrackerCompletedToday(_ trackerId: UUID) -> Bool {
@@ -535,7 +611,11 @@ extension TrackersViewController: NewHabitViewControllerDelegate {
     func didCreateTracker(_ tracker: Tracker, categoryTitle: String) {
         addTracker(tracker, toCategory: categoryTitle)
     }
-    
+}
+
+// MARK: - EditHabitViewControllerDelegate
+
+extension TrackersViewController: EditHabitViewControllerDelegate {
     func didUpdateTracker(_ tracker: Tracker, categoryTitle: String) {
         do {
             try trackerStore.update(tracker)
@@ -580,6 +660,58 @@ extension TrackersViewController: TrackerRecordStoreDelegate {
             self.loadData()
             self.collectionView.reloadData()
         }
+    }
+}
+
+// MARK: - Filter Methods
+
+extension TrackersViewController {
+    private func loadCurrentFilter() {
+        let savedFilterRawValue = UserDefaults.standard.integer(forKey: "currentFilter")
+        currentFilter = TrackerFilter(rawValue: savedFilterRawValue) ?? .all
+        updateFilterButtonAppearance()
+    }
+    
+    private func saveCurrentFilter() {
+        UserDefaults.standard.set(currentFilter.rawValue, forKey: "currentFilter")
+    }
+    
+    private func applyFilter(_ filter: TrackerFilter) {
+        currentFilter = filter
+        saveCurrentFilter()
+        
+        if filter == .today {
+            currentDate = Date()
+            datePicker.date = Date()
+        }
+        
+        updateFilterButtonAppearance()
+        updateUI()
+    }
+    
+    private func updateFilterButtonAppearance() {
+        if currentFilter.isResetFilter {
+            filterButton.setTitleColor(.white, for: .normal)
+        } else {
+            filterButton.setTitleColor(.red, for: .normal)
+        }
+    }
+    
+    @objc private func filterButtonTapped() {
+        let filterVC = FilterViewController()
+        filterVC.delegate = self
+        filterVC.selectedFilter = currentFilter
+        
+        let navController = UINavigationController(rootViewController: filterVC)
+        present(navController, animated: true)
+    }
+}
+
+// MARK: - FilterViewControllerDelegate
+
+extension TrackersViewController: FilterViewControllerDelegate {
+    func didSelectFilter(_ filter: TrackerFilter) {
+        applyFilter(filter)
     }
 }
 

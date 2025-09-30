@@ -57,8 +57,7 @@ final class NewCategoryViewController: UIViewController {
         textField.delegate = self
         textField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         textField.translatesAutoresizingMaskIntoConstraints = false
-        
-        // Отступ слева
+       
         let leftView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
         textField.leftView = leftView
         textField.leftViewMode = .always

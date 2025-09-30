@@ -35,8 +35,9 @@ final class EmojiCollectionViewCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        setupUI()
-        setupLayout()
+        setupViews()
+        setupConstraints()
+        setupAppearance()
     }
     
     required init?(coder: NSCoder) {
@@ -45,14 +46,13 @@ final class EmojiCollectionViewCell: UICollectionViewCell {
     
     // MARK: - Setup Methods
     
-    private func setupUI() {
+    private func setupViews() {
         contentView.addSubview(selectionBackgroundView)
         contentView.addSubview(emojiLabel)
     }
     
-    private func setupLayout() {
+    private func setupConstraints() {
         NSLayoutConstraint.activate([
-            
             selectionBackgroundView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             selectionBackgroundView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             selectionBackgroundView.widthAnchor.constraint(equalToConstant: 52),
@@ -65,7 +65,11 @@ final class EmojiCollectionViewCell: UICollectionViewCell {
         ])
     }
     
-    // MARK: - Public Methods
+    private func setupAppearance() {
+        contentView.backgroundColor = .clear
+    }
+    
+    // MARK: - Configuration
     
     func configure(with emoji: String) {
         self.emoji = emoji
@@ -76,7 +80,7 @@ final class EmojiCollectionViewCell: UICollectionViewCell {
         selectionBackgroundView.isHidden = !selected
     }
     
-    // MARK: - Override Methods
+    // MARK: - Reuse
     
     override func prepareForReuse() {
         super.prepareForReuse()

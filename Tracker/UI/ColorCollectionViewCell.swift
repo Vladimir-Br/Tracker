@@ -39,8 +39,9 @@ final class ColorCollectionViewCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        setupUI()
-        setupLayout()
+        setupViews()
+        setupConstraints()
+        setupAppearance()
     }
     
     required init?(coder: NSCoder) {
@@ -49,16 +50,14 @@ final class ColorCollectionViewCell: UICollectionViewCell {
     
     // MARK: - Setup Methods
     
-    private func setupUI() {
-        
+    private func setupViews() {
         contentView.addSubview(outerFrameView)
         contentView.addSubview(whiteBackgroundView)
         contentView.addSubview(colorView)
     }
     
-    private func setupLayout() {
+    private func setupConstraints() {
         NSLayoutConstraint.activate([
-            
             outerFrameView.widthAnchor.constraint(equalToConstant: 52),
             outerFrameView.heightAnchor.constraint(equalToConstant: 52),
             outerFrameView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
@@ -76,7 +75,11 @@ final class ColorCollectionViewCell: UICollectionViewCell {
         ])
     }
     
-    // MARK: - Public Methods
+    private func setupAppearance() {
+        contentView.backgroundColor = .clear
+    }
+    
+    // MARK: - Configuration
     
     func configure(with color: UIColor) {
         
@@ -90,7 +93,7 @@ final class ColorCollectionViewCell: UICollectionViewCell {
         whiteBackgroundView.isHidden = !selected
     }
     
-    // MARK: - Override Methods
+    // MARK: - Reuse
     
     override func prepareForReuse() {
         super.prepareForReuse()

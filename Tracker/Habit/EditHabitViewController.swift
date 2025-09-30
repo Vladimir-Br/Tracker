@@ -1,15 +1,15 @@
 
 import UIKit
 
-// MARK: - NewHabitViewControllerDelegate
+// MARK: - EditHabitViewControllerDelegate
 
-protocol NewHabitViewControllerDelegate: AnyObject {
-    func didCreateTracker(_ tracker: Tracker, categoryTitle: String)
+protocol EditHabitViewControllerDelegate: AnyObject {
+    func didUpdateTracker(_ tracker: Tracker, categoryTitle: String)
 }
 
-// MARK: - NewHabitViewController
+// MARK: - EditHabitViewController
 
-final class NewHabitViewController: UIViewController {
+final class EditHabitViewController: UIViewController {
     
     // MARK: - Properties
     
@@ -17,8 +17,13 @@ final class NewHabitViewController: UIViewController {
     private let trackerStore: TrackerStore
     private let categoryStore: TrackerCategoryStore
     
-    weak var delegate: NewHabitViewControllerDelegate?
+    weak var delegate: EditHabitViewControllerDelegate?
     
+    // MARK: - Edit Mode Properties
+    
+    private let editingTracker: Tracker
+    private let originalCategoryTitle: String
+    private let completedDays: Int
     
     private let lightGrayColor = UIColor(resource: .backgroundDay)
     
@@ -33,13 +38,15 @@ final class NewHabitViewController: UIViewController {
     
     // MARK: - Initialization
     
-    init(coreDataManager: CoreDataManager) {
+    init(coreDataManager: CoreDataManager, editingTracker: Tracker, categoryTitle: String, completedDays: Int) {
         self.coreDataManager = coreDataManager
         self.trackerStore = TrackerStore(context: coreDataManager.viewContext)
         self.categoryStore = TrackerCategoryStore(context: coreDataManager.viewContext)
+        self.editingTracker = editingTracker
+        self.originalCategoryTitle = categoryTitle
+        self.completedDays = completedDays
         super.init(nibName: nil, bundle: nil)
     }
-    
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -75,7 +82,7 @@ final class NewHabitViewController: UIViewController {
         ]
         
         label.attributedText = NSAttributedString(
-            string: NSLocalizedString("newHabit.title", comment: "Title for new habit screen"),
+            string: NSLocalizedString("editHabit.title", comment: "Title for edit habit screen"),
             attributes: attributes
         )
         label.textColor = UIColor(resource: .blackDay)
@@ -83,6 +90,14 @@ final class NewHabitViewController: UIViewController {
         return label
     }()
     
+    private let daysCounterLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 32, weight: .bold)
+        label.textColor = UIColor(resource: .blackDay)
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
     
     private let nameTextField: UITextField = {
         let textField = UITextField()
@@ -101,7 +116,6 @@ final class NewHabitViewController: UIViewController {
     }()
     
     private let menuTableView: UITableView = {
-        
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.backgroundColor = UIColor(resource: .backgroundDay)
@@ -126,17 +140,17 @@ final class NewHabitViewController: UIViewController {
         return button
     }()
     
-    private let createButton: UIButton = {
+    private let saveButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle(
-            NSLocalizedString("newHabit.button.create", comment: "Create tracker button title"),
+            NSLocalizedString("editHabit.saveButton", comment: "Save button title for edit habit"),
             for: .normal
         )
         button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = UIColor(resource: .grayDay)
+        button.backgroundColor = .black
         button.layer.cornerRadius = 16
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.isEnabled = false
+        button.isEnabled = true
         return button
     }()
     
@@ -227,7 +241,7 @@ final class NewHabitViewController: UIViewController {
         setupTapGesture()
         
         cancelButton.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
-        createButton.addTarget(self, action: #selector(createButtonTapped), for: .touchUpInside)
+        saveButton.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
         
         menuTableView.dataSource = self
         menuTableView.delegate = self
@@ -241,15 +255,25 @@ final class NewHabitViewController: UIViewController {
         colorCollectionView.delegate = self
         colorCollectionView.register(ColorCollectionViewCell.self, forCellWithReuseIdentifier: ColorCollectionViewCell.reuseIdentifier)
         
+        setupEditMode()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        // Обновляем данные после того, как view добавлен в иерархию
+        menuTableView.reloadData()
+        emojiCollectionView.reloadData()
+        colorCollectionView.reloadData()
     }
     
     // MARK: - Setup Methods
     
     private func setupUI() {
-        
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
         contentView.addSubview(titleLabel)
+        contentView.addSubview(daysCounterLabel)
         contentView.addSubview(nameTextField)
         contentView.addSubview(menuTableView)
         contentView.addSubview(emojiLabel)
@@ -257,7 +281,7 @@ final class NewHabitViewController: UIViewController {
         contentView.addSubview(colorLabel)
         contentView.addSubview(colorCollectionView)
         buttonsStackView.addArrangedSubview(cancelButton)
-        buttonsStackView.addArrangedSubview(createButton)
+        buttonsStackView.addArrangedSubview(saveButton)
         contentView.addSubview(buttonsStackView)
     }
     
@@ -278,7 +302,11 @@ final class NewHabitViewController: UIViewController {
             titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 27),
             titleLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             
-            nameTextField.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 40),
+            daysCounterLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 38),
+            daysCounterLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            daysCounterLabel.heightAnchor.constraint(equalToConstant: 38),
+            
+            nameTextField.topAnchor.constraint(equalTo: daysCounterLabel.bottomAnchor, constant: 40),
             nameTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             nameTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             nameTextField.heightAnchor.constraint(equalToConstant: 75),
@@ -288,7 +316,6 @@ final class NewHabitViewController: UIViewController {
             menuTableView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             menuTableView.heightAnchor.constraint(equalToConstant: 150),
             
-            
             emojiLabel.topAnchor.constraint(equalTo: menuTableView.bottomAnchor, constant: 32),
             emojiLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 28),
             emojiLabel.heightAnchor.constraint(equalToConstant: 18),
@@ -297,7 +324,6 @@ final class NewHabitViewController: UIViewController {
             emojiCollectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: LayoutConstants.emojiLeftInset),
             emojiCollectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -LayoutConstants.emojiRightInset),
             emojiCollectionView.heightAnchor.constraint(equalToConstant: 204),
-            
             
             colorLabel.topAnchor.constraint(equalTo: emojiCollectionView.bottomAnchor, constant: 16),
             colorLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 28),
@@ -326,6 +352,33 @@ final class NewHabitViewController: UIViewController {
         view.endEditing(true)
     }
     
+    private func setupEditMode() {
+        // Настраиваем счетчик дней
+        daysCounterLabel.text = formatDaysString(for: completedDays)
+        
+        // Заполняем поля данными редактируемой привычки
+        nameTextField.text = editingTracker.name
+        selectedEmoji = editingTracker.emoji
+        selectedColor = editingTracker.color
+        schedule = editingTracker.schedule
+        
+        // Устанавливаем категорию
+        selectedCategory = TrackerCategory(id: UUID(), title: originalCategoryTitle, trackers: [])
+        
+        // Обновляем UI
+        updateEmojiSelection()
+        updateColorSelection()
+    }
+    
+    private func formatDaysString(for count: Int) -> String {
+        return String.localizedStringWithFormat(
+            NSLocalizedString(
+                "trackerCell.days",
+                comment: "Pluralized string describing number of completed days"
+            ),
+            count
+        )
+    }
     
     private func updateEmojiSelection() {
         guard let emoji = selectedEmoji,
@@ -339,48 +392,35 @@ final class NewHabitViewController: UIViewController {
         selectedColorIndexPath = IndexPath(item: index, section: 0)
     }
     
-    
     // MARK: - Actions
     
     @objc private func cancelButtonTapped() {
         self.dismiss(animated: true)
     }
     
-    @objc private func createButtonTapped() {
+    @objc private func saveButtonTapped() {
         guard let name = nameTextField.text, !name.isEmpty,
               let emoji = selectedEmoji,
               let color = selectedColor,
               let selectedCategory = selectedCategory else { return }
         
-        let tracker = Tracker(
+        let updatedTracker = Tracker(
+            id: editingTracker.id,
             name: name,
             color: color,
             emoji: emoji,
-            schedule: schedule
+            schedule: schedule,
+            isPinned: editingTracker.isPinned
         )
         
-        delegate?.didCreateTracker(tracker, categoryTitle: selectedCategory.title)
+        delegate?.didUpdateTracker(updatedTracker, categoryTitle: selectedCategory.title)
         dismiss(animated: true)
-    }
-    
-    
-    // MARK: - Private Methods
-    
-    private func checkCreateButtonState() {
-        let isNameEntered = !(nameTextField.text?.isEmpty ?? true)
-        let isCategorySelected = selectedCategory != nil
-        let isEmojiSelected = selectedEmoji != nil
-        let isColorSelected = selectedColor != nil
-        let isEnabled = isNameEntered && isCategorySelected && isEmojiSelected && isColorSelected
-        
-        createButton.isEnabled = isEnabled
-        createButton.backgroundColor = isEnabled ? .black : UIColor(resource: .grayDay)
     }
 }
 
 // MARK: - UITableViewDataSource
 
-extension NewHabitViewController: UITableViewDataSource {
+extension EditHabitViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return 2
     }
@@ -426,7 +466,7 @@ extension NewHabitViewController: UITableViewDataSource {
 
 // MARK: - UITableViewDelegate
 
-extension NewHabitViewController: UITableViewDelegate {
+extension EditHabitViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 75
     }
@@ -458,9 +498,9 @@ extension NewHabitViewController: UITableViewDelegate {
 
 // MARK: - UITextFieldDelegate
 
-extension NewHabitViewController: UITextFieldDelegate {
+extension EditHabitViewController: UITextFieldDelegate {
     func textFieldDidChangeSelection(_ textField: UITextField) {
-        checkCreateButtonState()
+        // В режиме редактирования кнопка всегда активна, если есть данные
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
@@ -471,30 +511,28 @@ extension NewHabitViewController: UITextFieldDelegate {
 
 // MARK: - ScheduleViewControllerDelegate
 
-extension NewHabitViewController: ScheduleViewControllerDelegate {
+extension EditHabitViewController: ScheduleViewControllerDelegate {
     func didConfirmSchedule(selectedDays: Set<Weekday>) {
         self.schedule = Array(selectedDays).sorted(by: { $0.rawValue < $1.rawValue })
-        menuTableView.reloadData()
+        reloadTableViewIfNeeded()
     }
 }
 
 // MARK: - CategorySelectionDelegate
 
-extension NewHabitViewController: CategorySelectionDelegate {
+extension EditHabitViewController: CategorySelectionDelegate {
     func didSelectCategory(_ category: TrackerCategory) {
         self.selectedCategory = category
-        checkCreateButtonState()
-        menuTableView.reloadData()
+        reloadTableViewIfNeeded()
     }
 }
 
 // MARK: - UICollectionViewDelegate
 
-extension NewHabitViewController: UICollectionViewDelegate {
+extension EditHabitViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let indexPathsToReload = handleCollectionSelection(collectionView, at: indexPath)
         collectionView.reloadItems(at: indexPathsToReload)
-        checkCreateButtonState()
     }
     
     private func handleCollectionSelection(_ collectionView: UICollectionView, at indexPath: IndexPath) -> [IndexPath] {
@@ -543,7 +581,7 @@ extension NewHabitViewController: UICollectionViewDelegate {
 
 // MARK: - UICollectionViewDataSource
 
-extension NewHabitViewController: UICollectionViewDataSource {
+extension EditHabitViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         switch collectionView {
         case emojiCollectionView:
@@ -594,5 +632,23 @@ extension NewHabitViewController: UICollectionViewDataSource {
         cell.setSelected(indexPath == selectedColorIndexPath)
         
         return cell
+    }
+}
+
+// MARK: - Private Methods
+
+extension EditHabitViewController {
+    private func reloadTableViewIfNeeded() {
+        // Проверяем, что view находится в иерархии окон
+        guard view.window != nil else {
+            // Если view не в иерархии, откладываем обновление
+            DispatchQueue.main.async {
+                self.menuTableView.reloadData()
+            }
+            return
+        }
+        
+        // Если view в иерархии, обновляем сразу
+        menuTableView.reloadData()
     }
 }

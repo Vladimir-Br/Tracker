@@ -81,8 +81,9 @@ final class TrackerCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        setupUI()
-        setupLayout()
+        setupViews()
+        setupConstraints()
+        setupAppearance()
         completeButton.addTarget(self, action: #selector(completeButtonTapped), for: .touchUpInside)
     }
     
@@ -92,7 +93,7 @@ final class TrackerCell: UICollectionViewCell {
     
     // MARK: - Setup Methods
     
-    private func setupUI() {
+    private func setupViews() {
         contentView.addSubview(cardView)
         contentView.addSubview(daysCounterLabel)
         contentView.addSubview(completeButton)
@@ -102,12 +103,11 @@ final class TrackerCell: UICollectionViewCell {
         cardView.addSubview(nameLabel)
         cardView.addSubview(pinImageView)
         
-        // Добавляем контекстное меню только к cardView
         let contextMenuInteraction = UIContextMenuInteraction(delegate: self)
         cardView.addInteraction(contextMenuInteraction)
     }
     
-    private func setupLayout() {
+    private func setupConstraints() {
         NSLayoutConstraint.activate([
             cardView.topAnchor.constraint(equalTo: contentView.topAnchor),
             cardView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
@@ -142,7 +142,15 @@ final class TrackerCell: UICollectionViewCell {
         ])
     }
     
-    // MARK: - Public Methods
+    private func setupAppearance() {
+        contentView.backgroundColor = .clear
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowOpacity = 0.06
+        layer.shadowRadius = 6
+        layer.shadowOffset = CGSize(width: 0, height: 2)
+    }
+    
+    // MARK: - Configuration
     
     func configure(with tracker: Tracker, isCompleted: Bool, count: Int, at date: Date) {
         self.trackerId = tracker.id

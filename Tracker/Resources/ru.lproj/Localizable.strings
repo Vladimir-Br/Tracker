@@ -6,6 +6,7 @@
 "trackers.title" = "Трекеры";
 "trackers.search.placeholder" = "Поиск";
 "trackers.placeholder.title" = "Что будем отслеживать?";
+"trackers.placeholder.nothingFound" = "Ничего не найдено";
 "trackers.pinned.section.title" = "Закреплённые";
 "trackers.context.pin" = "Закрепить";
 "trackers.context.unpin" = "Открепить";
@@ -74,4 +75,10 @@
 "weekday.thursday.short" = "Чт";
 "weekday.friday.short" = "Пт";
 "weekday.saturday.short" = "Сб";
+
+"filters.all" = "Все трекеры";
+"filters.today" = "Трекеры на сегодня";
+"filters.completed" = "Завершённые";
+"filters.uncompleted" = "Незавершённые";
+"filters.button.title" = "Фильтры";
 
