@@ -22,6 +22,7 @@ final class TrackersViewController: UIViewController {
     private var completedTrackers: Set<TrackerRecord> = []
     private var currentDate: Date = Date()
     private var currentFilter: TrackerFilter = .all
+    private var searchText: String = ""
     
     // MARK: - Initialization
     
@@ -50,16 +51,19 @@ final class TrackersViewController: UIViewController {
         
         for category in categories {
             let filteredTrackers = category.trackers.filter { tracker in
-                // Фильтр по расписанию
-                let matchesSchedule = tracker.schedule.isEmpty || tracker.schedule.contains(where: { $0.rawValue == weekday })
+               let matchesSchedule = tracker.schedule.isEmpty || tracker.schedule.contains(where: { $0.rawValue == weekday })
                 guard matchesSchedule else { return false }
                 
-                // Применяем выбранный фильтр
+                if !searchText.isEmpty {
+                    let matchesSearch = tracker.name.lowercased().contains(searchText.lowercased())
+                    guard matchesSearch else { return false }
+                }
+                
                 switch currentFilter {
                 case .all:
                     return true
                 case .today:
-                    return true // Уже учтено в matchesSchedule
+                    return true 
                 case .completed:
                     return isTrackerCompleted(tracker.id)
                 case .uncompleted:
@@ -140,6 +144,9 @@ final class TrackersViewController: UIViewController {
         )
         controller.searchBar.searchTextField.font = UIFont.systemFont(ofSize: 17, weight: .regular)
         controller.searchBar.searchTextField.textColor = UIColor(resource: .grayDay)
+        controller.searchResultsUpdater = self
+        controller.obscuresBackgroundDuringPresentation = false
+        controller.hidesNavigationBarDuringPresentation = false
         return controller
     }()
     
@@ -164,6 +171,7 @@ final class TrackersViewController: UIViewController {
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.backgroundColor = .clear
+        collectionView.keyboardDismissMode = .onDrag
         return collectionView
     }()
     
@@ -235,6 +243,10 @@ final class TrackersViewController: UIViewController {
         collectionView.delegate = self
         
         filterButton.addTarget(self, action: #selector(filterButtonTapped), for: .touchUpInside)
+        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        tapGesture.cancelsTouchesInView = false
+        view.addGestureRecognizer(tapGesture)
     }
     
     private func setupLayout() {
@@ -269,15 +281,19 @@ final class TrackersViewController: UIViewController {
     // MARK: - Actions
     
     @objc private func addButtonTapped() {
-        let newHabitVC = NewHabitViewController(coreDataManager: coreDataManager)
-        newHabitVC.delegate = self
-        let navigationController = UINavigationController(rootViewController: newHabitVC)
+        let habitVC = HabitViewController(mode: .create, coreDataManager: coreDataManager)
+        habitVC.delegate = self
+        let navigationController = UINavigationController(rootViewController: habitVC)
         present(navigationController, animated: true)
     }
     
     @objc private func datePickerValueChanged(_ sender: UIDatePicker) {
         currentDate = sender.date
         updateUI()
+    }
+    
+    @objc private func dismissKeyboard() {
+        searchController.searchBar.resignFirstResponder()
     }
     
     // MARK: - Private Methods
@@ -368,14 +384,12 @@ final class TrackersViewController: UIViewController {
         // Подсчитываем количество выполненных дней
         let completedDays = completedTrackers.filter { $0.trackerId == trackerId }.count
         
-        let editController = EditHabitViewController(
-            coreDataManager: coreDataManager,
-            editingTracker: tracker,
-            categoryTitle: categoryTitle,
-            completedDays: completedDays
+        let habitVC = HabitViewController(
+            mode: .edit(tracker: tracker, categoryTitle: categoryTitle, completedDays: completedDays),
+            coreDataManager: coreDataManager
         )
-        editController.delegate = self
-        let navigationController = UINavigationController(rootViewController: editController)
+        habitVC.delegate = self
+        let navigationController = UINavigationController(rootViewController: habitVC)
         present(navigationController, animated: true)
     }
 
@@ -440,7 +454,7 @@ final class TrackersViewController: UIViewController {
         collectionView.isHidden = !hasContent
         
         if !hasContent {
-            let isFilterActive = !currentFilter.isResetFilter
+            let isFilterActive = !currentFilter.isResetFilter || !searchText.isEmpty
             
             if isFilterActive {
                 placeholderImageView.image = UIImage(named: "Nothing was found")
@@ -460,7 +474,16 @@ final class TrackersViewController: UIViewController {
     
     private func updateFilterButtonVisibility() {
         let hasTrackersOnSelectedDate = hasTrackersOnDate(currentDate)
-        filterButton.isHidden = !hasTrackersOnSelectedDate
+        let isSearchActive = !searchText.isEmpty
+        let hasSearchResults = !visibleCategories.isEmpty
+        
+        if !hasTrackersOnSelectedDate {
+            filterButton.isHidden = true
+        } else if isSearchActive && !hasSearchResults {
+            filterButton.isHidden = true
+        } else {
+            filterButton.isHidden = false
+        }
     }
     
     private func hasTrackersOnDate(_ date: Date) -> Bool {
@@ -605,27 +628,26 @@ extension TrackersViewController: TrackerCellDelegate {
     }
 }
 
-// MARK: - NewHabitViewControllerDelegate
+// MARK: - HabitViewControllerDelegate
 
-extension TrackersViewController: NewHabitViewControllerDelegate {
-    func didCreateTracker(_ tracker: Tracker, categoryTitle: String) {
-        addTracker(tracker, toCategory: categoryTitle)
-    }
-}
-
-// MARK: - EditHabitViewControllerDelegate
-
-extension TrackersViewController: EditHabitViewControllerDelegate {
-    func didUpdateTracker(_ tracker: Tracker, categoryTitle: String) {
-        do {
-            try trackerStore.update(tracker)
-            
-            if categoryTitle != originalCategoryTitle(for: tracker.id),
-               let newCategory = categories.first(where: { $0.title == categoryTitle }) {
-                try trackerStore.updateCategory(for: tracker.id, newCategoryId: newCategory.id)
+extension TrackersViewController: HabitViewControllerDelegate {
+    func didSaveHabit(_ tracker: Tracker, categoryTitle: String, isNewTracker: Bool) {
+        if isNewTracker {
+            // Создание нового трекера
+            addTracker(tracker, toCategory: categoryTitle)
+        } else {
+            // Обновление существующего трекера
+            do {
+                try trackerStore.update(tracker)
+                
+                // Проверяем, изменилась ли категория
+                if categoryTitle != originalCategoryTitle(for: tracker.id),
+                   let newCategory = categories.first(where: { $0.title == categoryTitle }) {
+                    try trackerStore.updateCategory(for: tracker.id, newCategoryId: newCategory.id)
+                }
+            } catch {
+                print("Ошибка при обновлении трекера: \(error)")
             }
-        } catch {
-            print("Ошибка при обновлении трекера: \(error)")
         }
     }
     
@@ -722,5 +744,18 @@ extension TrackersViewController {
         trackerStore.delegate = self
         categoryStore.delegate = self
         recordStore.delegate = self
+    }
+}
+
+// MARK: - UISearchResultsUpdating
+
+extension TrackersViewController: UISearchResultsUpdating {
+    func updateSearchResults(for searchController: UISearchController) {
+        if let text = searchController.searchBar.text {
+            searchText = text
+        } else {
+            searchText = ""
+        }
+        updateUI()
     }
 }
