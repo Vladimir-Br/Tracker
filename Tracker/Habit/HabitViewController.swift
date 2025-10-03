@@ -98,7 +98,7 @@ final class HabitViewController: UIViewController {
             string: "",
             attributes: attributes
         )
-        label.textColor = UIColor(resource: .blackDay)
+        label.textColor = Colors.labelPrimary
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -106,7 +106,7 @@ final class HabitViewController: UIViewController {
     private let daysCounterLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 32, weight: .bold)
-        label.textColor = UIColor(resource: .blackDay)
+        label.textColor = Colors.labelPrimary
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -118,7 +118,8 @@ final class HabitViewController: UIViewController {
             "newHabit.placeholder.name",
             comment: "Placeholder for tracker name field"
         )
-        textField.backgroundColor = UIColor(resource: .backgroundDay)
+        textField.backgroundColor = Colors.cellBackground
+        textField.textColor = Colors.labelPrimary
         textField.layer.cornerRadius = 16
         textField.font = .systemFont(ofSize: 17)
         textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
@@ -132,7 +133,7 @@ final class HabitViewController: UIViewController {
         
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.backgroundColor = UIColor(resource: .backgroundDay)
+        tableView.backgroundColor = Colors.cellBackground
         tableView.layer.cornerRadius = 16
         tableView.isScrollEnabled = false
         tableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
@@ -146,7 +147,8 @@ final class HabitViewController: UIViewController {
             for: .normal
         )
         button.setTitleColor(.red, for: .normal)
-        button.backgroundColor = .white
+        button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
+        button.backgroundColor = Colors.background
         button.layer.borderWidth = 1
         button.layer.borderColor = UIColor.red.cgColor
         button.layer.cornerRadius = 16
@@ -157,7 +159,8 @@ final class HabitViewController: UIViewController {
     private let saveButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = UIColor(resource: .grayDay)
+        button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
+        button.backgroundColor = Colors.gray
         button.layer.cornerRadius = 16
         button.translatesAutoresizingMaskIntoConstraints = false
         button.isEnabled = false
@@ -201,7 +204,7 @@ final class HabitViewController: UIViewController {
             comment: "Title for emoji selection section"
         )
         label.font = UIFont.systemFont(ofSize: 19, weight: .bold)
-        label.textColor = UIColor(resource: .blackDay)
+        label.textColor = Colors.labelPrimary
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -234,7 +237,7 @@ final class HabitViewController: UIViewController {
             comment: "Title for color selection section"
         )
         label.font = UIFont.systemFont(ofSize: 19, weight: .bold)
-        label.textColor = UIColor(resource: .blackDay)
+        label.textColor = Colors.labelPrimary
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -244,7 +247,7 @@ final class HabitViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationController?.navigationBar.isHidden = true
-        view.backgroundColor = .white
+        view.backgroundColor = Colors.background
         
         configureForMode()
         setupUI()
@@ -277,7 +280,7 @@ final class HabitViewController: UIViewController {
     // MARK: - Setup Methods
     
     private func configureForMode() {
-        // Создаем атрибуты для заголовка
+        
         let font = UIFont.systemFont(ofSize: 16, weight: .medium)
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.lineHeightMultiple = 22.0 / 16.0
@@ -489,7 +492,8 @@ final class HabitViewController: UIViewController {
         let isEnabled = isNameEntered && isCategorySelected && isEmojiSelected && isColorSelected
         
         saveButton.isEnabled = isEnabled
-        saveButton.backgroundColor = isEnabled ? .black : UIColor(resource: .grayDay)
+        saveButton.backgroundColor = isEnabled ? Colors.buttonPrimary : Colors.gray
+        saveButton.setTitleColor(isEnabled ? Colors.buttonPrimaryText : .white, for: .normal)
     }
 }
 

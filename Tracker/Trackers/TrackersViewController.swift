@@ -132,7 +132,7 @@ final class TrackersViewController: UIViewController {
             target: self,
             action: #selector(addButtonTapped)
         )
-        button.tintColor = UIColor(resource: .blackDay)
+        button.tintColor = Colors.labelPrimary
         return button
     }()
     
@@ -160,7 +160,7 @@ final class TrackersViewController: UIViewController {
     private let placeholderLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 12, weight: .medium)
-        label.textColor = UIColor(resource: .blackDay)
+        label.textColor = Colors.labelPrimary
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -178,9 +178,9 @@ final class TrackersViewController: UIViewController {
     private let filterButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle(NSLocalizedString("filters.button.title", comment: "Filters button title"), for: .normal)
-        button.setTitleColor(.white, for: .normal)
+        button.setTitleColor(Colors.buttonText, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .regular)
-        button.backgroundColor = UIColor(resource: .blueDay)
+        button.backgroundColor = Colors.blue
         button.layer.cornerRadius = 16
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
@@ -232,7 +232,7 @@ final class TrackersViewController: UIViewController {
     }
     
     private func setupUI() {
-        view.backgroundColor = .white
+        view.backgroundColor = Colors.background
         
         view.addSubview(placeholderImageView)
         view.addSubview(placeholderLabel)
@@ -365,7 +365,6 @@ final class TrackersViewController: UIViewController {
         )
         do {
             try trackerStore.update(updatedTracker)
-            // Делегат автоматически вызовет storeDidChange() и обновит UI
         } catch {
             print("Ошибка при обновлении закрепления трекера: \(error)")
         }
@@ -376,12 +375,10 @@ final class TrackersViewController: UIViewController {
             return
         }
         
-        // Находим категорию трекера
         let categoryTitle = categories.first { category in
             category.trackers.contains { $0.id == trackerId }
         }?.title ?? ""
-        
-        // Подсчитываем количество выполненных дней
+       
         let completedDays = completedTrackers.filter { $0.trackerId == trackerId }.count
         
         let habitVC = HabitViewController(
@@ -633,14 +630,11 @@ extension TrackersViewController: TrackerCellDelegate {
 extension TrackersViewController: HabitViewControllerDelegate {
     func didSaveHabit(_ tracker: Tracker, categoryTitle: String, isNewTracker: Bool) {
         if isNewTracker {
-            // Создание нового трекера
             addTracker(tracker, toCategory: categoryTitle)
         } else {
-            // Обновление существующего трекера
             do {
                 try trackerStore.update(tracker)
                 
-                // Проверяем, изменилась ли категория
                 if categoryTitle != originalCategoryTitle(for: tracker.id),
                    let newCategory = categories.first(where: { $0.title == categoryTitle }) {
                     try trackerStore.updateCategory(for: tracker.id, newCategoryId: newCategory.id)
@@ -713,7 +707,7 @@ extension TrackersViewController {
     
     private func updateFilterButtonAppearance() {
         if currentFilter.isResetFilter {
-            filterButton.setTitleColor(.white, for: .normal)
+            filterButton.setTitleColor(Colors.buttonText, for: .normal)
         } else {
             filterButton.setTitleColor(.red, for: .normal)
         }

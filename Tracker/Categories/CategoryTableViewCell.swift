@@ -14,14 +14,14 @@ final class CategoryTableViewCell: UITableViewCell {
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 17, weight: .regular)
-        label.textColor = UIColor(resource: .blackDay)
+        label.textColor = Colors.labelPrimary
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
     private let checkmarkImageView: UIImageView = {
         let imageView = UIImageView(image: UIImage(systemName: "checkmark"))
-        imageView.tintColor = UIColor(resource: .blueDay)
+        imageView.tintColor = Colors.blue
         imageView.isHidden = true
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
@@ -29,7 +29,7 @@ final class CategoryTableViewCell: UITableViewCell {
     
     private let separatorView: UIView = {
         let view = UIView()
-        view.backgroundColor = UIColor(resource: .grayDay)
+        view.backgroundColor = Colors.gray
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -75,7 +75,7 @@ final class CategoryTableViewCell: UITableViewCell {
     }
     
     private func setupAppearance() {
-        backgroundColor = UIColor(resource: .backgroundDay)
+        backgroundColor = Colors.cellBackground
         contentView.backgroundColor = .clear
         selectionStyle = .none
     }

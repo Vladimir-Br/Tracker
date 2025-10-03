@@ -14,7 +14,7 @@ final class FilterCell: UITableViewCell {
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 17, weight: .regular)
-        label.textColor = UIColor(resource: .blackDay)
+        label.textColor = Colors.labelPrimary
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -74,7 +74,7 @@ final class FilterCell: UITableViewCell {
     }
     
     private func setupAppearance() {
-        backgroundColor = UIColor(resource: .backgroundDay)
+        backgroundColor = Colors.cellBackground
         contentView.backgroundColor = .clear
         selectionStyle = .none
     }

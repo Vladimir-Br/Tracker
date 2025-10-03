@@ -9,8 +9,16 @@ final class CoreDataManager {
     
     // MARK: - Initialization
     
-    init(containerName: String) {
+    init(containerName: String, inMemory: Bool = false) {
         persistentContainer = NSPersistentContainer(name: containerName)
+        
+        if inMemory {
+            // Для тестов: хранилище в памяти (не сохраняется на диск)
+            let description = NSPersistentStoreDescription()
+            description.type = NSInMemoryStoreType
+            persistentContainer.persistentStoreDescriptions = [description]
+        }
+        
         persistentContainer.loadPersistentStores { _, error in
             if let error = error {
                 assertionFailure("Не удалось загрузить Core Data stack: \(error.localizedDescription)")

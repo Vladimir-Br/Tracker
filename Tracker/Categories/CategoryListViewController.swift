@@ -25,7 +25,7 @@ final class CategoryListViewController: UIViewController {
             comment: "Title for category selection screen"
         )
         label.font = .systemFont(ofSize: 16, weight: .medium)
-        label.textColor = UIColor(resource: .blackDay)
+        label.textColor = Colors.labelPrimary
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -33,7 +33,7 @@ final class CategoryListViewController: UIViewController {
     
     private lazy var tableView: UITableView = {
         let tableView = UITableView()
-        tableView.backgroundColor = .clear
+        tableView.backgroundColor = Colors.cellBackground
         tableView.separatorStyle = .none
         tableView.layer.cornerRadius = 16
         tableView.clipsToBounds = true
@@ -56,7 +56,7 @@ final class CategoryListViewController: UIViewController {
             comment: "Placeholder message when there are no categories"
         )
         label.font = .systemFont(ofSize: 12, weight: .medium)
-        label.textColor = UIColor(resource: .blackDay)
+        label.textColor = Colors.labelPrimary
         label.textAlignment = .center
         label.numberOfLines = 2
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -78,8 +78,8 @@ final class CategoryListViewController: UIViewController {
             NSLocalizedString("categoryList.button.add", comment: "Add category button title"),
             for: .normal
         )
-        button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = UIColor(resource: .blackDay)
+        button.setTitleColor(Colors.buttonPrimaryText, for: .normal)
+        button.backgroundColor = Colors.buttonPrimary
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
         button.layer.cornerRadius = 16
         button.addTarget(self, action: #selector(addCategoryButtonTapped), for: .touchUpInside)
@@ -116,7 +116,7 @@ final class CategoryListViewController: UIViewController {
     // MARK: - Setup Methods
     
     private func setupUI() {
-        view.backgroundColor = .white
+        view.backgroundColor = Colors.background
         
         view.addSubview(titleLabel)
         view.addSubview(tableView)
@@ -273,7 +273,7 @@ extension CategoryListViewController: UITableViewDelegate {
         cell.layer.maskedCorners = corners
         cell.layer.cornerRadius = !corners.isEmpty ? 16 : 0
         cell.layer.masksToBounds = !corners.isEmpty
-        cell.backgroundColor = UIColor(resource: .backgroundDay)
+        cell.backgroundColor = Colors.cellBackground
     }
     
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {

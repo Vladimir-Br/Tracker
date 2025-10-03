@@ -21,7 +21,9 @@ final class ColorCollectionViewCell: UICollectionViewCell {
     
     private let whiteBackgroundView: UIView = {
         let view = UIView()
-        view.backgroundColor = .white
+        view.backgroundColor = UIColor { trait in
+            trait.userInterfaceStyle == .dark ? .black : .white
+        }
         view.layer.cornerRadius = 8
         view.isHidden = true
         view.translatesAutoresizingMaskIntoConstraints = false

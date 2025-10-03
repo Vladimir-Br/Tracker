@@ -21,7 +21,7 @@ final class FilterViewController: UIViewController {
     private let tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.backgroundColor = UIColor(resource: .backgroundDay)
+        tableView.backgroundColor = Colors.cellBackground
         tableView.separatorStyle = .none
         tableView.layer.cornerRadius = 16
         tableView.layer.masksToBounds = true
@@ -55,7 +55,7 @@ final class FilterViewController: UIViewController {
         let titleLabel = UILabel()
         titleLabel.text = NSLocalizedString("filters.button.title", comment: "Filters button title")
         titleLabel.font = .systemFont(ofSize: 16, weight: .medium)
-        titleLabel.textColor = UIColor(resource: .blackDay)
+        titleLabel.textColor = Colors.labelPrimary
         titleLabel.textAlignment = .center
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         

@@ -29,7 +29,7 @@ final class NewCategoryViewController: UIViewController {
     private lazy var titleLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 16, weight: .medium)
-        label.textColor = UIColor(resource: .blackDay)
+        label.textColor = Colors.labelPrimary
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -37,7 +37,7 @@ final class NewCategoryViewController: UIViewController {
     
     private lazy var textFieldContainer: UIView = {
         let container = UIView()
-        container.backgroundColor = UIColor(resource: .backgroundDay)
+        container.backgroundColor = Colors.cellBackground
         container.layer.cornerRadius = 16
         container.translatesAutoresizingMaskIntoConstraints = false
         return container
@@ -50,7 +50,7 @@ final class NewCategoryViewController: UIViewController {
             comment: "Placeholder for category name field"
         )
         textField.font = .systemFont(ofSize: 17)
-        textField.textColor = UIColor(resource: .blackDay)
+        textField.textColor = Colors.labelPrimary
         textField.backgroundColor = .clear
         textField.borderStyle = .none
         textField.returnKeyType = .done
@@ -129,7 +129,7 @@ final class NewCategoryViewController: UIViewController {
     // MARK: - Setup Methods
     
     private func setupUI() {
-        view.backgroundColor = .white
+        view.backgroundColor = Colors.background
         titleLabel.text = NSLocalizedString(
             "newCategory.title.create",
             comment: "Default title for new category screen"
