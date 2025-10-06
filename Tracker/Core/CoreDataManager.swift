@@ -13,7 +13,7 @@ final class CoreDataManager {
         persistentContainer = NSPersistentContainer(name: containerName)
         
         if inMemory {
-            // Для тестов: хранилище в памяти (не сохраняется на диск)
+            
             let description = NSPersistentStoreDescription()
             description.type = NSInMemoryStoreType
             persistentContainer.persistentStoreDescriptions = [description]

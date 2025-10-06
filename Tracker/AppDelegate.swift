@@ -1,6 +1,7 @@
 
 import UIKit
 import CoreData
+import AppMetricaCore
 
 // MARK: - AppDelegate
 
@@ -16,6 +17,8 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
         coreDataManager = CoreDataManager(containerName: "Tracker")
+        
+        AnalyticsService.activate()
         
         return true
     }
