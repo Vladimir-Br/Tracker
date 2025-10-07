@@ -30,7 +30,7 @@
 		F7DF80A62E44FD0800D9ACC4 /* Exceptions for "Tracker" folder in "Tracker" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Info.plist,
+				App/Info.plist,
 			);
 			target = F7DF80932E44FD0600D9ACC4 /* Tracker */;
 		};

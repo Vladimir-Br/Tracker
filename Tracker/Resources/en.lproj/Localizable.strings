@@ -82,4 +82,11 @@
 "filters.uncompleted" = "Uncompleted";
 "filters.button.title" = "Filters";
 
+"statistics.title" = "Statistics";
+"statistics.empty" = "Nothing to analyze yet";
+"statistics.bestPeriod" = "Best Period";
+"statistics.perfectDays" = "Perfect Days";
+"statistics.completed" = "Trackers Completed";
+"statistics.average" = "Average";
+
 

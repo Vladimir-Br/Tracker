@@ -5,12 +5,6 @@ import UIKit
 
 typealias Binding<T> = (T) -> Void
 
-// MARK: - Constants
-
-enum Constants {
-    // Константы приложения
-}
-
 // MARK: - TrackerFilter
 
 enum TrackerFilter: Int, CaseIterable {

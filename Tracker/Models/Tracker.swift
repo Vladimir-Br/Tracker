@@ -107,3 +107,12 @@ enum Weekday: Int, CaseIterable {
         }
     }
 }
+
+// MARK: - Calendar Extension
+
+extension Calendar {
+    func weekday(for date: Date) -> Weekday? {
+        let weekdayComponent = self.component(.weekday, from: date)
+        return Weekday(rawValue: weekdayComponent)
+    }
+}

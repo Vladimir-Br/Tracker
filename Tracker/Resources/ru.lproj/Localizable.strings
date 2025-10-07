@@ -82,3 +82,10 @@
 "filters.uncompleted" = "Незавершённые";
 "filters.button.title" = "Фильтры";
 
+"statistics.title" = "Статистика";
+"statistics.empty" = "Анализировать пока нечего";
+"statistics.bestPeriod" = "Лучший период";
+"statistics.perfectDays" = "Идеальные дни";
+"statistics.completed" = "Трекеров завершено";
+"statistics.average" = "Среднее значение";
+
