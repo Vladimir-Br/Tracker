@@ -1,21 +1,35 @@
 
+// MARK: - 🟢 Onboarding
+
 "onboarding.page1.description" = "Track only what matters to you";
 "onboarding.page2.description" = "Even if it isn’t liters of water and yoga";
-"onboarding.button.skip" = "That’s some tech!";
+"onboarding.button.skip" = "That's some tech!";
+
+
+// MARK: - 🔵 Main Screen (Trackers)
 
 "trackers.title" = "Trackers";
 "trackers.search.placeholder" = "Search";
 "trackers.placeholder.title" = "What should we track?";
 "trackers.placeholder.nothingFound" = "Nothing found";
 "trackers.pinned.section.title" = "Pinned";
+
+// MARK: Tracker Context Menu
+
 "trackers.context.pin" = "Pin";
 "trackers.context.unpin" = "Unpin";
 "trackers.context.edit" = "Edit";
 "trackers.context.delete" = "Delete";
 "trackers.delete.alert.title" = "Are you sure you want to delete the tracker?";
 
+
+// MARK: - 🟣 Tab Bar
+
 "tabbar.trackers" = "Trackers";
 "tabbar.statistics" = "Statistics";
+
+
+// MARK: - 🟡 Creating / Editing Habit
 
 "newHabit.title" = "New Habit";
 "newHabit.placeholder.name" = "Enter tracker name";
@@ -29,8 +43,14 @@
 "newHabit.menu.schedule" = "Schedule";
 "newHabit.schedule.everyday" = "Every day";
 
+
+// MARK: - 🗓 Schedule
+
 "schedule.title" = "Schedule";
 "schedule.button.done" = "Done";
+
+
+// MARK: - 🧩 Categories
 
 "categoryList.title" = "Category";
 "categoryList.placeholder" = "Habits and events can be\n grouped by meaning";
@@ -42,11 +62,16 @@
 "categoryList.alert.delete.message" = "Do you really want to delete this category?";
 "categoryList.alert.cancel" = "Cancel";
 
+// MARK: Creating Category
+
 "newCategory.title.create" = "New category";
 "newCategory.title.edit" = "Edit category";
 "newCategory.placeholder" = "Enter category name";
 "newCategory.button.done" = "Done";
 "newCategory.error.limit" = "Limit of 38 characters";
+
+
+// MARK: - ❌ Store Errors (StoreError)
 
 "storeError.trackerNotFound" = "Tracker not found";
 "storeError.categoryNotFound" = "Category not found";
@@ -59,6 +84,9 @@
 "storeError.categoryUpdateFailed" = "Failed to update category: %@";
 "storeError.categoryDeleteFailed" = "Failed to delete category: %@";
 "storeError.categoryLoadFailed" = "Failed to load categories: %@";
+
+
+// MARK: - 📅 Weekdays
 
 "weekday.sunday.full" = "Sunday";
 "weekday.monday.full" = "Monday";
@@ -76,11 +104,17 @@
 "weekday.friday.short" = "Fri";
 "weekday.saturday.short" = "Sat";
 
+
+// MARK: - 🔍 Filters
+
 "filters.all" = "All Trackers";
 "filters.today" = "Trackers for Today";
 "filters.completed" = "Completed";
 "filters.uncompleted" = "Uncompleted";
 "filters.button.title" = "Filters";
+
+
+// MARK: - 📊 Statistics
 
 "statistics.title" = "Statistics";
 "statistics.empty" = "Nothing to analyze yet";
@@ -88,5 +122,3 @@
 "statistics.perfectDays" = "Perfect Days";
 "statistics.completed" = "Trackers Completed";
 "statistics.average" = "Average";
-
-

@@ -1,21 +1,35 @@
 
+// MARK: - 🟢 Onboarding
+
 "onboarding.page1.description" = "Отслеживайте только то, что хотите";
 "onboarding.page2.description" = "Даже если это не литры воды и йога";
 "onboarding.button.skip" = "Вот это технологии!";
+
+
+// MARK: - 🔵 Главный экран (Trackers)
 
 "trackers.title" = "Трекеры";
 "trackers.search.placeholder" = "Поиск";
 "trackers.placeholder.title" = "Что будем отслеживать?";
 "trackers.placeholder.nothingFound" = "Ничего не найдено";
 "trackers.pinned.section.title" = "Закреплённые";
+
+// MARK: Контекстное меню трекера
+
 "trackers.context.pin" = "Закрепить";
 "trackers.context.unpin" = "Открепить";
 "trackers.context.edit" = "Редактировать";
 "trackers.context.delete" = "Удалить";
 "trackers.delete.alert.title" = "Уверены что хотите удалить трекер?";
 
+
+// MARK: - 🟣 Tab Bar
+
 "tabbar.trackers" = "Трекеры";
 "tabbar.statistics" = "Статистика";
+
+
+// MARK: - 🟡 Создание / редактирование привычки
 
 "newHabit.title" = "Новая привычка";
 "newHabit.placeholder.name" = "Введите название трекера";
@@ -29,8 +43,14 @@
 "newHabit.menu.schedule" = "Расписание";
 "newHabit.schedule.everyday" = "Каждый день";
 
+
+// MARK: - 🗓 Расписание
+
 "schedule.title" = "Расписание";
 "schedule.button.done" = "Готово";
+
+
+// MARK: - 🧩 Категории
 
 "categoryList.title" = "Категория";
 "categoryList.placeholder" = "Привычки и события можно\n объединить по смыслу";
@@ -42,11 +62,16 @@
 "categoryList.alert.delete.message" = "Эта категория точно не нужна?";
 "categoryList.alert.cancel" = "Отменить";
 
+// MARK: Создание категории
+
 "newCategory.title.create" = "Новая категория";
 "newCategory.title.edit" = "Редактирование категории";
 "newCategory.placeholder" = "Введите название категории";
 "newCategory.button.done" = "Готово";
 "newCategory.error.limit" = "Ограничение 38 символов";
+
+
+// MARK: - ❌ Ошибки хранилища (StoreError)
 
 "storeError.trackerNotFound" = "Трекер не найден";
 "storeError.categoryNotFound" = "Категория не найдена";
@@ -59,6 +84,9 @@
 "storeError.categoryUpdateFailed" = "Не удалось обновить категорию: %@";
 "storeError.categoryDeleteFailed" = "Не удалось удалить категорию: %@";
 "storeError.categoryLoadFailed" = "Не удалось загрузить категории: %@";
+
+
+// MARK: - 📅 Дни недели
 
 "weekday.sunday.full" = "Воскресенье";
 "weekday.monday.full" = "Понедельник";
@@ -76,11 +104,17 @@
 "weekday.friday.short" = "Пт";
 "weekday.saturday.short" = "Сб";
 
+
+// MARK: - 🔍 Фильтры
+
 "filters.all" = "Все трекеры";
 "filters.today" = "Трекеры на сегодня";
 "filters.completed" = "Завершённые";
 "filters.uncompleted" = "Незавершённые";
 "filters.button.title" = "Фильтры";
+
+
+// MARK: - 📊 Статистика
 
 "statistics.title" = "Статистика";
 "statistics.empty" = "Анализировать пока нечего";
@@ -88,4 +122,3 @@
 "statistics.perfectDays" = "Идеальные дни";
 "statistics.completed" = "Трекеров завершено";
 "statistics.average" = "Среднее значение";
-

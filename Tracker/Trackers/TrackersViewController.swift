@@ -200,12 +200,12 @@ final class TrackersViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        AnalyticsService.trackScreenOpen(screen: Analytics.screenMain)
+        AnalyticsService.trackScreenOpen(screen: .main)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        AnalyticsService.trackScreenClose(screen: Analytics.screenMain)
+        AnalyticsService.trackScreenClose(screen: .main)
     }
     
     // MARK: - Setup Methods
@@ -291,7 +291,7 @@ final class TrackersViewController: UIViewController {
     // MARK: - Actions
     
     @objc private func addButtonTapped() {
-        AnalyticsService.trackButtonClick(screen: Analytics.screenMain, item: Analytics.itemAddTrack)
+        AnalyticsService.trackButtonClick(screen: .main, item: .addTrack)
         
         let habitVC = HabitViewController(mode: .create, coreDataManager: coreDataManager)
         habitVC.delegate = self
@@ -349,7 +349,7 @@ final class TrackersViewController: UIViewController {
                 comment: "Context menu title for editing tracker"
             )
         ) { [weak self] _ in
-            AnalyticsService.trackButtonClick(screen: Analytics.screenMain, item: Analytics.itemEdit)
+            AnalyticsService.trackButtonClick(screen: .main, item: .edit)
             self?.editTracker(with: tracker.id)
         }
         let deleteAction = UIAction(
@@ -359,7 +359,7 @@ final class TrackersViewController: UIViewController {
             ),
             attributes: .destructive
         ) { [weak self] _ in
-            AnalyticsService.trackButtonClick(screen: Analytics.screenMain, item: Analytics.itemDelete)
+            AnalyticsService.trackButtonClick(screen: .main, item: .delete)
             self?.deleteTracker(with: tracker.id)
         }
         return UIMenu(children: [pinAction, editAction, deleteAction])
@@ -609,7 +609,7 @@ extension TrackersViewController: UICollectionViewDelegateFlowLayout {
 
 extension TrackersViewController: TrackerCellDelegate {
     func didTapCompleteButton(for cell: TrackerCell) {
-        AnalyticsService.trackButtonClick(screen: Analytics.screenMain, item: Analytics.itemTrack)
+        AnalyticsService.trackButtonClick(screen: .main, item: .track)
         
         guard let indexPath = collectionView.indexPath(for: cell) else { return }
         let tracker = visibleCategories[indexPath.section].trackers[indexPath.item]
@@ -730,7 +730,7 @@ extension TrackersViewController {
     }
     
     @objc private func filterButtonTapped() {
-        AnalyticsService.trackButtonClick(screen: Analytics.screenMain, item: Analytics.itemFilter)
+        AnalyticsService.trackButtonClick(screen: .main, item: .filter)
         
         let filterVC = FilterViewController()
         filterVC.delegate = self

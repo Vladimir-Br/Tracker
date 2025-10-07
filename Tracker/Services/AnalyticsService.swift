@@ -2,35 +2,47 @@
 import Foundation
 import AppMetricaCore
 
-// MARK: - Analytics Constants
+// MARK: - 📊 Analytics Event Model
 
-struct Analytics {
-    // Events
-    static let eventOpen = "open"
-    static let eventClose = "close"
-    static let eventClick = "click"
+enum AnalyticsEvent {
     
-    // Screens
-    static let screenMain = "Main"
+    // MARK: События
     
-    // Items
-    static let itemAddTrack = "add_track"
-    static let itemTrack = "track"
-    static let itemFilter = "filter"
-    static let itemEdit = "edit"
-    static let itemDelete = "delete"
+    enum Event: String {
+        case open
+        case close
+        case click
+    }
+    
+    // MARK: Экраны
+   
+    enum Screen: String {
+        case main = "Main"
+        case statistics = "Statistics"
+        case onboarding = "Onboarding"
+    }
+    
+    // MARK: Элементы интерфейса
+    
+    enum Item: String {
+        case addTrack = "add_track"
+        case track = "track"
+        case filter = "filter"
+        case edit = "edit"
+        case delete = "delete"
+    }
 }
 
-// MARK: - Analytics Service
+// MARK: - 📈 Analytics Service
 
-struct AnalyticsService {
+enum AnalyticsService {
     
     // MARK: - Activation
     
     static func activate() {
         guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "AppMetricaAPIKey") as? String,
               let configuration = AppMetricaConfiguration(apiKey: apiKey) else {
-            print("⚠️ AppMetrica не активирована - проверьте API ключ")
+            print("⚠️ AppMetrica не активирована — проверьте API ключ")
             return
         }
         
@@ -38,36 +50,37 @@ struct AnalyticsService {
         print("✅ AppMetrica активирована")
     }
     
-    // MARK: - Event Tracking
-    
-    static func trackScreenOpen(screen: String) {
-        let params: [AnyHashable: Any] = [
-            "event": Analytics.eventOpen,
-            "screen": screen
-        ]
-        
-        print("📊 Analytics: \(params)")
-        AppMetrica.reportEvent(name: "ui_event", parameters: params)
+    // MARK: - Public Methods
+   
+    static func trackScreenOpen(screen: AnalyticsEvent.Screen) {
+        self.report(event: .open, screen: screen)
     }
     
-    static func trackScreenClose(screen: String) {
-        let params: [AnyHashable: Any] = [
-            "event": Analytics.eventClose,
-            "screen": screen
-        ]
-        
-        print("📊 Analytics: \(params)")
-        AppMetrica.reportEvent(name: "ui_event", parameters: params)
+    static func trackScreenClose(screen: AnalyticsEvent.Screen) {
+        self.report(event: .close, screen: screen)
     }
     
-    static func trackButtonClick(screen: String, item: String) {
-        let params: [AnyHashable: Any] = [
-            "event": Analytics.eventClick,
-            "screen": screen,
-            "item": item
+    static func trackButtonClick(screen: AnalyticsEvent.Screen, item: AnalyticsEvent.Item) {
+        self.report(event: .click, screen: screen, item: item)
+    }
+    
+    // MARK: - Private Reporting
+    
+    private static func report(
+        event: AnalyticsEvent.Event,
+        screen: AnalyticsEvent.Screen,
+        item: AnalyticsEvent.Item? = nil
+    ) {
+        var params: [AnyHashable: Any] = [
+            "event": event.rawValue,
+            "screen": screen.rawValue
         ]
         
-        print("📊 Analytics: \(params)")
+        if let item = item {
+            params["item"] = item.rawValue
+        }
+        
+        print("📊 Analytics Event:", params)
         AppMetrica.reportEvent(name: "ui_event", parameters: params)
     }
 }

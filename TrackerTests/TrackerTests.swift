@@ -42,6 +42,21 @@ final class TrackerTests: XCTestCase {
         return navigationController
     }
     
+    private func createSampleTracker() {
+        let categoryStore = TrackerCategoryStore(context: coreDataManager.viewContext)
+        let trackerStore = TrackerStore(context: coreDataManager.viewContext)
+        let categoryId = try! categoryStore.add(title: "Важное")
+        
+        let tracker = Tracker(
+            name: "Поливать растения",
+            color: UIColor(named: "ColorSelection1") ?? .systemRed,
+            emoji: "❤️",
+            schedule: Weekday.allCases
+        )
+        
+        try! trackerStore.add(tracker, categoryId: categoryId)
+    }
+    
     // MARK: - Tests
     
     // MARK: Light Mode Tests
@@ -55,18 +70,7 @@ final class TrackerTests: XCTestCase {
     }
     
     func testTrackersViewControllerWithTrackers_Light() {
-        let categoryStore = TrackerCategoryStore(context: coreDataManager.viewContext)
-        let trackerStore = TrackerStore(context: coreDataManager.viewContext)
-        let categoryId = try! categoryStore.add(title: "Важное")
-        
-        let tracker = Tracker(
-            name: "Поливать растения",
-            color: UIColor(named: "ColorSelection1") ?? .systemRed,
-            emoji: "❤️",
-            schedule: Weekday.allCases
-        )
-        
-        try! trackerStore.add(tracker, categoryId: categoryId)
+        createSampleTracker()
         
         let vc = makeNavigationController()
         assertSnapshot(
@@ -86,18 +90,7 @@ final class TrackerTests: XCTestCase {
     }
     
     func testTrackersViewControllerWithTrackers_Dark() {
-        let categoryStore = TrackerCategoryStore(context: coreDataManager.viewContext)
-        let trackerStore = TrackerStore(context: coreDataManager.viewContext)
-        let categoryId = try! categoryStore.add(title: "Важное")
-        
-        let tracker = Tracker(
-            name: "Поливать растения",
-            color: UIColor(named: "ColorSelection1") ?? .systemRed,
-            emoji: "❤️",
-            schedule: Weekday.allCases
-        )
-        
-        try! trackerStore.add(tracker, categoryId: categoryId)
+        createSampleTracker()
         
         let vc = makeNavigationController()
         assertSnapshot(
