@@ -5,6 +5,7 @@ import UIKit
 
 protocol TrackerCellDelegate: AnyObject {
     func didTapCompleteButton(for cell: TrackerCell)
+    func didRequestContextMenu(for cell: TrackerCell, at location: CGPoint) -> UIContextMenuConfiguration?
 }
 
 // MARK: - TrackerCell
@@ -15,6 +16,7 @@ final class TrackerCell: UICollectionViewCell {
     
     static let reuseIdentifier = "TrackerCell"
     weak var delegate: TrackerCellDelegate?
+    private var trackerId: UUID?
     
     // MARK: - UI Elements
     
@@ -33,6 +35,14 @@ final class TrackerCell: UICollectionViewCell {
         return view
     }()
     
+    private let pinImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.contentMode = .scaleAspectFit
+        imageView.isHidden = true
+        return imageView
+    }()
+
     private let emojiLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 16)
@@ -54,7 +64,7 @@ final class TrackerCell: UICollectionViewCell {
     private let daysCounterLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 12, weight: .medium)
-        label.textColor = .black
+        label.textColor = Colors.labelPrimary
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -71,8 +81,9 @@ final class TrackerCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        setupUI()
-        setupLayout()
+        setupViews()
+        setupConstraints()
+        setupAppearance()
         completeButton.addTarget(self, action: #selector(completeButtonTapped), for: .touchUpInside)
     }
     
@@ -82,7 +93,7 @@ final class TrackerCell: UICollectionViewCell {
     
     // MARK: - Setup Methods
     
-    private func setupUI() {
+    private func setupViews() {
         contentView.addSubview(cardView)
         contentView.addSubview(daysCounterLabel)
         contentView.addSubview(completeButton)
@@ -90,9 +101,13 @@ final class TrackerCell: UICollectionViewCell {
         cardView.addSubview(emojiBackgroundView)
         emojiBackgroundView.addSubview(emojiLabel)
         cardView.addSubview(nameLabel)
+        cardView.addSubview(pinImageView)
+        
+        let contextMenuInteraction = UIContextMenuInteraction(delegate: self)
+        cardView.addInteraction(contextMenuInteraction)
     }
     
-    private func setupLayout() {
+    private func setupConstraints() {
         NSLayoutConstraint.activate([
             cardView.topAnchor.constraint(equalTo: contentView.topAnchor),
             cardView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
@@ -112,6 +127,11 @@ final class TrackerCell: UICollectionViewCell {
             nameLabel.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -12),
             nameLabel.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -12),
             
+            pinImageView.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 12),
+            pinImageView.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -4),
+            pinImageView.widthAnchor.constraint(equalToConstant: 24),
+            pinImageView.heightAnchor.constraint(equalToConstant: 24),
+
             completeButton.topAnchor.constraint(equalTo: cardView.bottomAnchor, constant: 8),
             completeButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -12),
             completeButton.widthAnchor.constraint(equalToConstant: 34),
@@ -122,9 +142,19 @@ final class TrackerCell: UICollectionViewCell {
         ])
     }
     
-    // MARK: - Public Methods
+    private func setupAppearance() {
+        contentView.backgroundColor = .clear
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowOpacity = 0.06
+        layer.shadowRadius = 6
+        layer.shadowOffset = CGSize(width: 0, height: 2)
+    }
+    
+    // MARK: - Configuration
     
     func configure(with tracker: Tracker, isCompleted: Bool, count: Int, at date: Date) {
+        self.trackerId = tracker.id
+        
         cardView.backgroundColor = tracker.color
         emojiLabel.text = tracker.emoji
         nameLabel.text = tracker.name
@@ -141,7 +171,15 @@ final class TrackerCell: UICollectionViewCell {
         let calendar = Calendar.current
         let isFutureDay = calendar.startOfDay(for: date) > calendar.startOfDay(for: Date())
         completeButton.isEnabled = !isFutureDay
+
+        let symbolConfiguration = UIImage.SymbolConfiguration(pointSize: 24, weight: .regular)
+        let paletteConfiguration = UIImage.SymbolConfiguration(paletteColors: [UIColor.white, tracker.color])
+        let combinedConfiguration = symbolConfiguration.applying(paletteConfiguration)
+        pinImageView.preferredSymbolConfiguration = combinedConfiguration
+        pinImageView.image = UIImage(systemName: "pin.square.fill")?.withConfiguration(combinedConfiguration)
+        pinImageView.isHidden = !tracker.isPinned
     }
+
     
     // MARK: - Actions
     
@@ -152,17 +190,24 @@ final class TrackerCell: UICollectionViewCell {
     // MARK: - Private Methods
     
     private func formatDaysString(for count: Int) -> String {
-        let lastDigit = count % 10
-        let lastTwoDigits = count % 100
+        return String.localizedStringWithFormat(
+            NSLocalizedString(
+                "trackerCell.days",
+                comment: "Pluralized string describing number of completed days"
+            ),
+            count
+        )
+    }
+}
+
+// MARK: - UIContextMenuInteractionDelegate
+
+extension TrackerCell: UIContextMenuInteractionDelegate {
+    func contextMenuInteraction(
+        _ interaction: UIContextMenuInteraction,
+        configurationForMenuAtLocation location: CGPoint
+    ) -> UIContextMenuConfiguration? {
         
-        if lastTwoDigits >= 11 && lastTwoDigits <= 19 {
-            return "\(count) дней"
-        } else if lastDigit == 1 {
-            return "\(count) день"
-        } else if lastDigit >= 2 && lastDigit <= 4 {
-            return "\(count) дня"
-        } else {
-            return "\(count) дней"
-        }
+        return delegate?.didRequestContextMenu(for: self, at: location)
     }
 }

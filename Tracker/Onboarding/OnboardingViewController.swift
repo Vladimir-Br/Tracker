@@ -7,11 +7,17 @@ final class OnboardingViewController: UIPageViewController {
     
     private lazy var pages: [UIViewController] = [
         createPage(
-            description: "Отслеживайте только то, что хотите",
+            description: NSLocalizedString(
+                "onboarding.page1.description",
+                comment: "Onboarding first page description"
+            ),
             imagePage: "Page1"
         ),
         createPage(
-            description: "Даже если это не литры воды и йога",
+            description: NSLocalizedString(
+                "onboarding.page2.description",
+                comment: "Onboarding second page description"
+            ),
             imagePage: "Page2"
         )
     ]
@@ -31,7 +37,10 @@ final class OnboardingViewController: UIPageViewController {
     private lazy var skipButton: UIButton = {
         let button = UIButton(type: .system)
         
-        button.setTitle("Вот это технологии!", for: .normal)
+        button.setTitle(
+            NSLocalizedString("onboarding.button.skip", comment: "Title for onboarding skip button"),
+            for: .normal
+        )
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.backgroundColor = UIColor(resource: .blackDay)

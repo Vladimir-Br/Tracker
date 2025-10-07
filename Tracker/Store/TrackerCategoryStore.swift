@@ -84,7 +84,9 @@ final class TrackerCategoryStore: NSObject, Storable {
               let title = coreDataCategory.title else { return nil }
         
         let trackersSet = coreDataCategory.trackers as? Set<TrackerCoreData> ?? Set()
-        let trackers: [Tracker] = trackersSet.compactMap { Tracker(from: $0) }
+        let trackers: [Tracker] = trackersSet
+            .compactMap { Tracker(from: $0) }
+            .sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
         
         return TrackerCategory(
             id: categoryId,

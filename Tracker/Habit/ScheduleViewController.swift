@@ -25,9 +25,12 @@ final class ScheduleViewController: UIViewController {
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Расписание"
+        label.text = NSLocalizedString(
+            "schedule.title",
+            comment: "Title for schedule selection screen"
+        )
         label.font = .systemFont(ofSize: 16, weight: .medium)
-        label.textColor = .black
+        label.textColor = Colors.labelPrimary
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -36,7 +39,7 @@ final class ScheduleViewController: UIViewController {
     private let scheduleTableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.backgroundColor = UIColor(resource: .backgroundDay)
+        tableView.backgroundColor = Colors.cellBackground
         tableView.layer.cornerRadius = 16
         tableView.isScrollEnabled = false
         tableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
@@ -45,9 +48,13 @@ final class ScheduleViewController: UIViewController {
 
     private let doneButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Готово", for: .normal)
-        button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = UIColor(resource: .grayDay)
+        button.setTitle(
+            NSLocalizedString("schedule.button.done", comment: "Done button title"),
+            for: .normal
+        )
+        button.setTitleColor(Colors.buttonPrimaryText, for: .normal)
+        button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
+        button.backgroundColor = Colors.gray
         button.layer.cornerRadius = 16
         button.translatesAutoresizingMaskIntoConstraints = false
         button.isEnabled = false
@@ -59,7 +66,7 @@ final class ScheduleViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationController?.navigationBar.isHidden = true
-        view.backgroundColor = .white
+        view.backgroundColor = Colors.background
         
         setupUI()
         setupLayout()
@@ -120,7 +127,7 @@ final class ScheduleViewController: UIViewController {
     private func checkDoneButtonState() {
         let isEnabled = !currentlySelectedDays.isEmpty
         doneButton.isEnabled = isEnabled
-        doneButton.backgroundColor = isEnabled ? .black : UIColor(resource: .grayDay)
+        doneButton.backgroundColor = isEnabled ? Colors.buttonPrimary : Colors.gray
     }
 }
 

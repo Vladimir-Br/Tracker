@@ -68,6 +68,18 @@ final class TrackerStore: NSObject, Storable {
         let coreDataTracker = try findTracker(by: tracker.id)
         coreDataTracker.configure(from: tracker)
         try saveContext()
+        delegate?.storeDidChange()
+    }
+    
+    func updateCategory(for trackerId: UUID, newCategoryId: UUID) throws {
+        let tracker = try findTracker(by: trackerId)
+        let newCategory = try findCategory(by: newCategoryId)
+        
+        // Меняем связь трекера с категорией
+        tracker.category = newCategory
+        
+        try saveContext()
+        delegate?.storeDidChange()
     }
     
     func delete(trackerId: UUID) throws {
@@ -120,6 +132,7 @@ extension TrackerCoreData {
         self.trackerId = tracker.id
         self.name = tracker.name
         self.emoji = tracker.emoji
+        self.isPinned = tracker.isPinned
         let colorHexString = tracker.color.hexString
         if let colorData = colorHexString.data(using: .utf8) {
             self.color = colorData as NSData

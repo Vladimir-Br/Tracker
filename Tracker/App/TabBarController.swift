@@ -35,12 +35,12 @@ final class TabBarController: UITabBarController {
         let statisticsVC = StatisticsViewController(coreDataManager: coreDataManager)
 
         trackersVC.tabBarItem = UITabBarItem(
-            title: "Трекеры",
+            title: NSLocalizedString("tabbar.trackers", comment: "Tab title for trackers list"),
             image: UIImage(named: "Record"),
             selectedImage: UIImage(named: "Record")
         )
         statisticsVC.tabBarItem = UITabBarItem(
-            title: "Статистика",
+            title: NSLocalizedString("tabbar.statistics", comment: "Tab title for statistics screen"),
             image: UIImage(named: "Hare"),
             selectedImage: UIImage(named: "Hare")
         )
@@ -55,7 +55,7 @@ final class TabBarController: UITabBarController {
         
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = .white
+        appearance.backgroundColor = Colors.background
         appearance.shadowColor = UIColor.systemGray4
         tabBar.standardAppearance = appearance
         tabBar.scrollEdgeAppearance = appearance

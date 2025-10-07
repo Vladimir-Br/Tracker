@@ -29,7 +29,7 @@ final class NewCategoryViewController: UIViewController {
     private lazy var titleLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 16, weight: .medium)
-        label.textColor = UIColor(resource: .blackDay)
+        label.textColor = Colors.labelPrimary
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -37,7 +37,7 @@ final class NewCategoryViewController: UIViewController {
     
     private lazy var textFieldContainer: UIView = {
         let container = UIView()
-        container.backgroundColor = UIColor(resource: .backgroundDay)
+        container.backgroundColor = Colors.cellBackground
         container.layer.cornerRadius = 16
         container.translatesAutoresizingMaskIntoConstraints = false
         return container
@@ -45,17 +45,19 @@ final class NewCategoryViewController: UIViewController {
     
     private lazy var nameTextField: UITextField = {
         let textField = UITextField()
-        textField.placeholder = "Введите название категории"
+        textField.placeholder = NSLocalizedString(
+            "newCategory.placeholder",
+            comment: "Placeholder for category name field"
+        )
         textField.font = .systemFont(ofSize: 17)
-        textField.textColor = UIColor(resource: .blackDay)
+        textField.textColor = Colors.labelPrimary
         textField.backgroundColor = .clear
         textField.borderStyle = .none
         textField.returnKeyType = .done
         textField.delegate = self
         textField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         textField.translatesAutoresizingMaskIntoConstraints = false
-        
-        // Отступ слева
+       
         let leftView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
         textField.leftView = leftView
         textField.leftViewMode = .always
@@ -75,7 +77,10 @@ final class NewCategoryViewController: UIViewController {
     
     private lazy var doneButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Готово", for: .normal)
+        button.setTitle(
+            NSLocalizedString("newCategory.button.done", comment: "Done button title"),
+            for: .normal
+        )
         button.setTitleColor(.white, for: .normal)
         button.backgroundColor = UIColor(resource: .grayDay)
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
@@ -106,9 +111,15 @@ final class NewCategoryViewController: UIViewController {
         
         switch mode {
         case .create:
-            titleLabel.text = "Новая категория"
+            titleLabel.text = NSLocalizedString(
+                "newCategory.title.create",
+                comment: "Title for creating new category"
+            )
         case .edit(let category, _):
-            titleLabel.text = "Редактирование категории"
+            titleLabel.text = NSLocalizedString(
+                "newCategory.title.edit",
+                comment: "Title for editing category"
+            )
             nameTextField.text = category.title
             updateDoneButtonState()
             updateClearButtonVisibility()
@@ -118,8 +129,11 @@ final class NewCategoryViewController: UIViewController {
     // MARK: - Setup Methods
     
     private func setupUI() {
-        view.backgroundColor = .white
-        titleLabel.text = "Новая категория"
+        view.backgroundColor = Colors.background
+        titleLabel.text = NSLocalizedString(
+            "newCategory.title.create",
+            comment: "Default title for new category screen"
+        )
         
         view.addSubview(titleLabel)
         view.addSubview(textFieldContainer)
@@ -177,7 +191,12 @@ final class NewCategoryViewController: UIViewController {
         
         let text = nameTextField.text ?? ""
         if text.count > 38 {
-            showError("Ограничение 38 символов")
+            showError(
+                NSLocalizedString(
+                    "newCategory.error.limit",
+                    comment: "Error message when category name exceeds limit"
+                )
+            )
         } else {
             hideError()
         }

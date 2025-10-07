@@ -20,9 +20,12 @@ final class CategoryListViewController: UIViewController {
     
     private lazy var titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Категория"
+        label.text = NSLocalizedString(
+            "categoryList.title",
+            comment: "Title for category selection screen"
+        )
         label.font = .systemFont(ofSize: 16, weight: .medium)
-        label.textColor = UIColor(resource: .blackDay)
+        label.textColor = Colors.labelPrimary
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -30,7 +33,7 @@ final class CategoryListViewController: UIViewController {
     
     private lazy var tableView: UITableView = {
         let tableView = UITableView()
-        tableView.backgroundColor = .clear
+        tableView.backgroundColor = Colors.cellBackground
         tableView.separatorStyle = .none
         tableView.layer.cornerRadius = 16
         tableView.clipsToBounds = true
@@ -48,9 +51,12 @@ final class CategoryListViewController: UIViewController {
     
     private lazy var placeholderLabel: UILabel = {
         let label = UILabel()
-        label.text = "Привычки и события можно\n объединить по смыслу"
+        label.text = NSLocalizedString(
+            "categoryList.placeholder",
+            comment: "Placeholder message when there are no categories"
+        )
         label.font = .systemFont(ofSize: 12, weight: .medium)
-        label.textColor = UIColor(resource: .blackDay)
+        label.textColor = Colors.labelPrimary
         label.textAlignment = .center
         label.numberOfLines = 2
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -68,9 +74,12 @@ final class CategoryListViewController: UIViewController {
     
     private lazy var addCategoryButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Добавить категорию", for: .normal)
-        button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = UIColor(resource: .blackDay)
+        button.setTitle(
+            NSLocalizedString("categoryList.button.add", comment: "Add category button title"),
+            for: .normal
+        )
+        button.setTitleColor(Colors.buttonPrimaryText, for: .normal)
+        button.backgroundColor = Colors.buttonPrimary
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
         button.layer.cornerRadius = 16
         button.addTarget(self, action: #selector(addCategoryButtonTapped), for: .touchUpInside)
@@ -107,7 +116,7 @@ final class CategoryListViewController: UIViewController {
     // MARK: - Setup Methods
     
     private func setupUI() {
-        view.backgroundColor = .white
+        view.backgroundColor = Colors.background
         
         view.addSubview(titleLabel)
         view.addSubview(tableView)
@@ -188,8 +197,15 @@ final class CategoryListViewController: UIViewController {
     }
     
     private func showErrorAlert(message: String) {
-        let alert = UIAlertController(title: "Ошибка", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        let alert = UIAlertController(
+            title: NSLocalizedString("categoryList.alert.error.title", comment: "Title for category error alert"),
+            message: message,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(
+            title: NSLocalizedString("categoryList.alert.error.ok", comment: "OK button for error alert"),
+            style: .default
+        ))
         present(alert, animated: true)
     }
     
@@ -257,7 +273,7 @@ extension CategoryListViewController: UITableViewDelegate {
         cell.layer.maskedCorners = corners
         cell.layer.cornerRadius = !corners.isEmpty ? 16 : 0
         cell.layer.masksToBounds = !corners.isEmpty
-        cell.backgroundColor = UIColor(resource: .backgroundDay)
+        cell.backgroundColor = Colors.cellBackground
     }
     
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
@@ -267,11 +283,18 @@ extension CategoryListViewController: UITableViewDelegate {
     }
     
     private func createContextMenu(for indexPath: IndexPath) -> UIMenu {
-        let editAction = UIAction(title: "Редактировать", image: UIImage(systemName: "pencil")) { [weak self] _ in
+        let editAction = UIAction(
+            title: NSLocalizedString("categoryList.context.edit", comment: "Context menu item to edit category"),
+            image: UIImage(systemName: "pencil")
+        ) { [weak self] _ in
             self?.editCategory(at: indexPath)
         }
         
-        let deleteAction = UIAction(title: "Удалить", image: UIImage(systemName: "trash"), attributes: .destructive) { [weak self] _ in
+        let deleteAction = UIAction(
+            title: NSLocalizedString("categoryList.context.delete", comment: "Context menu item to delete category"),
+            image: UIImage(systemName: "trash"),
+            attributes: .destructive
+        ) { [weak self] _ in
             self?.showDeleteConfirmation(for: indexPath)
         }
         
@@ -297,15 +320,24 @@ extension CategoryListViewController: UITableViewDelegate {
         
         let alert = UIAlertController(
             title: nil,
-            message: "Эта категория точно не нужна?",
+            message: NSLocalizedString(
+                "categoryList.alert.delete.message",
+                comment: "Confirmation message before deleting category"
+            ),
             preferredStyle: .actionSheet
         )
         
-        let deleteAction = UIAlertAction(title: "Удалить", style: .destructive) { [weak self] _ in
+        let deleteAction = UIAlertAction(
+            title: NSLocalizedString("categoryList.context.delete", comment: "Delete action title"),
+            style: .destructive
+        ) { [weak self] _ in
             self?.viewModel.deleteCategory(at: indexPath.row)
         }
         
-        let cancelAction = UIAlertAction(title: "Отменить", style: .cancel)
+        let cancelAction = UIAlertAction(
+            title: NSLocalizedString("categoryList.alert.cancel", comment: "Cancel button title"),
+            style: .cancel
+        )
         
         alert.addAction(deleteAction)
         alert.addAction(cancelAction)

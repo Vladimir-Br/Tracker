@@ -5,10 +5,35 @@ import UIKit
 
 typealias Binding<T> = (T) -> Void
 
-// MARK: - Constants
+// MARK: - TrackerFilter
 
-enum Constants {
-    // Константы приложения
+enum TrackerFilter: Int, CaseIterable {
+    case all = 0
+    case today = 1
+    case completed = 2
+    case uncompleted = 3
+    
+    var title: String {
+        switch self {
+        case .all:
+            return NSLocalizedString("filters.all", comment: "All trackers filter")
+        case .today:
+            return NSLocalizedString("filters.today", comment: "Today's trackers filter")
+        case .completed:
+            return NSLocalizedString("filters.completed", comment: "Completed trackers filter")
+        case .uncompleted:
+            return NSLocalizedString("filters.uncompleted", comment: "Uncompleted trackers filter")
+        }
+    }
+    
+    var isResetFilter: Bool {
+        switch self {
+        case .all, .today:
+            return true
+        case .completed, .uncompleted:
+            return false
+        }
+    }
 }
 
 // MARK: - EmojiConstants
